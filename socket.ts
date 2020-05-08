@@ -22,9 +22,7 @@ io.on('connection', (socket) => {
   socket.on('request_id', (requestId) => {
     console.log(requestId);
 
-    socket.join('request_id', () => {
-      CLIENTS[requestId] = socket;
-    });
+    CLIENTS[requestId] = socket;
   });
 
   socket.on('disconnect', () => {
