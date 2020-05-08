@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 
-import { app } from './app';
+import { server as httpServer, app } from './app';
+import { io } from './socket';
 
 import { server } from './config';
 
@@ -15,13 +16,19 @@ if (typeof server.port === 'string') {
   }
 }
 
-(async () => {
-  app.listen(server.port, () => {
-    console.log('server is running.');
+(() => {
+  httpServer.listen(server.port, () => {
+    console.log('http server running...');
 
     // set unix socket rw rights for nginx
     if (typeof server.port === 'string') {
       fs.chmodSync(server.port, '777');
     }
   });
+})();
+
+(() => {
+  io.listen(httpServer);
+
+  console.log('socket server running...');
 })();

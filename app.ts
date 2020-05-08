@@ -2,15 +2,21 @@ import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as passport from 'koa-passport';
 import * as OAuth2Strategy from 'passport-oauth2';
+import * as http from 'http';
+import axios from 'axios';
+
 import { twitch } from './config';
+import { publishToken } from './socket';
+
+export interface IUser {
+  accessToken: string;
+  refreshToken: string;
+}
 
 declare module 'koa' {
   interface Context {
     state: {
-      user: {
-        accessToken: string;
-        refreshToken: string;
-      };
+      user: IUser;
       [key: string]: any;
     };
   }
@@ -19,16 +25,15 @@ declare module 'koa' {
 declare module 'koa-router' {
   interface IRouterContext {
     state: {
-      user: {
-        accessToken: string;
-        refreshToken: string;
-      };
+      user: IUser;
       [key: string]: any;
     };
   }
 }
 
 export const app = new Koa();
+
+export const server = http.createServer(app.callback());
 
 app.use(passport.initialize());
 
@@ -71,6 +76,15 @@ router.get(
   async (ctx, next) => {
     const { requestId } = ctx.query;
 
+    if (!requestId) {
+      throw new Error('no_request_id');
+    }
+
+    await next();
+  },
+  async (ctx, next) => {
+    const { requestId } = ctx.query;
+
     ctx.cookies.set('requestId', requestId);
 
     await next();
@@ -82,10 +96,39 @@ router.get(
   '/auth/twitch/callback',
   passport.authenticate('twitch', { session: false }),
   (ctx: Router.IRouterContext, next: Koa.Next) => {
-    ctx.body = {
-      requestId: ctx.cookies.get('requestId'),
-      state: ctx.state.user,
-    };
+    const requestId = ctx.cookies.get('requestId');
+    const { user } = ctx.state;
+
+    publishToken(requestId, user);
+
+    ctx.body = 'sign_in_successful';
+  }
+);
+
+router.get(
+  '/auth/twitch/refresh',
+  async (ctx, next) => {
+    const { refreshToken } = ctx.query;
+
+    if (!refreshToken) {
+      throw new Error('no_refresh_token');
+    }
+
+    await next();
+  },
+  async (ctx, next) => {
+    const { refreshToken } = ctx.query;
+
+    const params = new URLSearchParams();
+
+    params.append('client_id', twitch.clientId);
+    params.append('client_secret', twitch.clientSecret);
+    params.append('grant_type', 'refresh_token');
+    params.append('refresh_token', refreshToken);
+
+    const { data } = await axios.post('https://id.twitch.tv/oauth2/token', params);
+
+    ctx.body = data;
   }
 );
 
