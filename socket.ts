@@ -17,9 +17,23 @@ export function publishToken(requestId: string, user: IUser) {
 }
 
 io.on('connection', (socket) => {
+  console.log('connection');
+
   socket.on('request_id', (requestId) => {
+    console.log(requestId);
+
     socket.join('request_id', () => {
       CLIENTS[requestId] = socket;
+    });
+  });
+
+  socket.on('disconnect', () => {
+    console.log('disconnect');
+
+    _.forEach(CLIENTS, (client, id) => {
+      if (client === socket) {
+        delete CLIENTS[id];
+      }
     });
   });
 });
