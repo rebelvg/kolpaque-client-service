@@ -2,7 +2,7 @@ import * as SocketClient from 'socket.io-client';
 
 import { server } from './config';
 
-const io = SocketClient(`http://${server.host}:${server.port}`);
+const io = SocketClient(`http://localhost:${server.port}`);
 
 io.on('user', (user) => {
   console.log(user);
