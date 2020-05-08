@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node .",
-    "client": "ts-node client.ts"
+    "client": "ts-node client.ts",
+    "pm2": "yarn install && yarn run migrate && pm2 restart stats-node"
   },
   "dependencies": {
     "axios": "^0.19.2",
