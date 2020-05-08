@@ -6,7 +6,7 @@
   "scripts": {
     "start": "ts-node .",
     "client": "ts-node client.ts",
-    "pm2": "yarn install && yarn run migrate && pm2 restart stats-node"
+    "pm2": "yarn install && pm2 restart client-service"
   },
   "dependencies": {
     "axios": "^0.19.2",
