@@ -128,7 +128,10 @@ router.get(
 
     const { data } = await axios.post('https://id.twitch.tv/oauth2/token', params);
 
-    ctx.body = data;
+    ctx.body = {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+    };
   }
 );
 
