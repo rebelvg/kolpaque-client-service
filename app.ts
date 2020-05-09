@@ -156,13 +156,11 @@ router.get('/youtube/streams', async (ctx, next) => {
 });
 
 router.get('/auth', async (ctx, next) => {
-  const { requestId } = ctx.query;
+  const jwt = jsonwebtoken.sign({ isLoggedIn: true }, serverConfig.jwtSecret, { expiresIn: '1d' });
 
-  const signedJwt = jsonwebtoken.sign({ isLoggedIn: true }, serverConfig.jwtSecret);
-
-  publishKlpqUser(requestId, signedJwt);
-
-  ctx.body = 'sign_in_successful';
+  ctx.body = {
+    jwt,
+  };
 });
 
 app.use(router.routes());
