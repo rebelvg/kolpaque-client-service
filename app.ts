@@ -4,11 +4,13 @@ import * as passport from 'koa-passport';
 import * as OAuth2Strategy from 'passport-oauth2';
 import * as http from 'http';
 import axios from 'axios';
+import * as jsonwebtoken from 'jsonwebtoken';
 
-import { twitch } from './config';
-import { publishToken } from './socket';
+import { server as serverConfig, twitch } from './config';
+import { publishTwitchUser, publishKlpqUser } from './socket-server';
+import { youtubeClient } from './clients';
 
-export interface IUser {
+export interface ITwitchUser {
   accessToken: string;
   refreshToken: string;
 }
@@ -16,7 +18,7 @@ export interface IUser {
 declare module 'koa' {
   interface Context {
     state: {
-      user: IUser;
+      user: ITwitchUser;
       [key: string]: any;
     };
   }
@@ -25,7 +27,7 @@ declare module 'koa' {
 declare module 'koa-router' {
   interface IRouterContext {
     state: {
-      user: IUser;
+      user: ITwitchUser;
       [key: string]: any;
     };
   }
@@ -99,7 +101,7 @@ router.get(
     const requestId = ctx.cookies.get('requestId');
     const { user } = ctx.state;
 
-    publishToken(requestId, user);
+    publishTwitchUser(requestId, user);
 
     ctx.body = 'sign_in_successful';
   }
@@ -134,6 +136,34 @@ router.get(
     };
   }
 );
+
+router.get('/youtube/channels', async (ctx, next) => {
+  const { channelName } = ctx.query;
+  const jwt = ctx.get('jwt');
+
+  jsonwebtoken.verify(jwt, serverConfig.jwtSecret);
+
+  ctx.body = await youtubeClient.getChannels(channelName);
+});
+
+router.get('/youtube/streams', async (ctx, next) => {
+  const { channelId } = ctx.query;
+  const jwt = ctx.get('jwt');
+
+  jsonwebtoken.verify(jwt, serverConfig.jwtSecret);
+
+  ctx.body = await youtubeClient.getStreams(channelId);
+});
+
+router.get('/auth', async (ctx, next) => {
+  const { requestId } = ctx.query;
+
+  const signedJwt = jsonwebtoken.sign({ isLoggedIn: true }, serverConfig.jwtSecret);
+
+  publishKlpqUser(requestId, signedJwt);
+
+  ctx.body = 'sign_in_successful';
+});
 
 app.use(router.routes());
 

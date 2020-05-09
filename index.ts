@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 
 import { server as httpServer, app } from './app';
-import { io } from './socket';
+import { io } from './socket-server';
 
 import { server } from './config';
 
