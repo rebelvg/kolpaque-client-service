@@ -9,6 +9,8 @@ export const twitch = {
   callbackUrl: 'http://localhost:3000/auth/twitch/callback',
 };
 
-export const youtube = {
-  apiKey: 'api_key',
+export const google = {
+  clientId: 'client_id',
+  clientSecret: 'client_secret',
+  callbackUrl: 'http://localhost:3000/auth/google/callback',
 };

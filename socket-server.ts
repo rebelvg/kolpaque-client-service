@@ -1,6 +1,6 @@
 import * as SocketServer from 'socket.io';
 import * as _ from 'lodash';
-import { ITwitchUser } from './app';
+import { IUser } from './app';
 
 export const io = SocketServer();
 
@@ -8,11 +8,19 @@ const CLIENTS: {
   [key: string]: SocketServer.Socket;
 } = {};
 
-export function publishTwitchUser(requestId: string, user: ITwitchUser) {
+export function publishTwitchUser(requestId: string, user: IUser) {
   const client = CLIENTS[requestId];
 
   if (client) {
     client.emit('twitch_user', user);
+  }
+}
+
+export function publishYoutubeUser(requestId: string, user: IUser) {
+  const client = CLIENTS[requestId];
+
+  if (client) {
+    client.emit('youtube_user', user);
   }
 }
 

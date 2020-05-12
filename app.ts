@@ -6,11 +6,10 @@ import * as http from 'http';
 import axios from 'axios';
 import * as jsonwebtoken from 'jsonwebtoken';
 
-import { server as serverConfig, twitch } from './config';
-import { publishTwitchUser, publishKlpqUser } from './socket-server';
-import { youtubeClient } from './clients';
+import { server as serverConfig, twitch, google } from './config';
+import { publishTwitchUser, publishKlpqUser, publishYoutubeUser } from './socket-server';
 
-export interface ITwitchUser {
+export interface IUser {
   accessToken: string;
   refreshToken: string;
 }
@@ -18,7 +17,7 @@ export interface ITwitchUser {
 declare module 'koa' {
   interface Context {
     state: {
-      user: ITwitchUser;
+      user: IUser;
       [key: string]: any;
     };
   }
@@ -27,7 +26,7 @@ declare module 'koa' {
 declare module 'koa-router' {
   interface IRouterContext {
     state: {
-      user: ITwitchUser;
+      user: IUser;
       [key: string]: any;
     };
   }
@@ -48,6 +47,27 @@ passport.use(
       clientID: twitch.clientId,
       clientSecret: twitch.clientSecret,
       callbackURL: twitch.callbackUrl,
+    },
+    function (accessToken, refreshToken, profile, done) {
+      const user = {
+        accessToken,
+        refreshToken,
+      };
+
+      done(null, user);
+    }
+  )
+);
+
+passport.use(
+  'google',
+  new OAuth2Strategy(
+    {
+      authorizationURL: 'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline',
+      tokenURL: 'https://oauth2.googleapis.com/token',
+      clientID: google.clientId,
+      clientSecret: google.clientSecret,
+      callbackURL: google.callbackUrl,
     },
     function (accessToken, refreshToken, profile, done) {
       const user = {
@@ -82,16 +102,38 @@ router.get(
       throw new Error('no_request_id');
     }
 
-    await next();
-  },
-  async (ctx, next) => {
-    const { requestId } = ctx.query;
-
     ctx.cookies.set('requestId', requestId);
 
     await next();
   },
   passport.authenticate('twitch', { session: false, scope: 'user_read' })
+);
+
+router.get(
+  '/auth/google',
+  async (ctx, next) => {
+    const { requestId } = ctx.query;
+
+    if (!requestId) {
+      throw new Error('no_request_id');
+    }
+
+    ctx.cookies.set('requestId', requestId);
+
+    await next();
+  },
+  passport.authenticate('google', {
+    session: false,
+    scope: [
+      'https://www.googleapis.com/auth/plus.login',
+      'https://www.googleapis.com/auth/plus.me',
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/youtube.channel-memberships.creator',
+      'https://www.googleapis.com/auth/youtube.readonly',
+      'https://www.googleapis.com/auth/youtube.force-ssl',
+    ],
+  })
 );
 
 router.get(
@@ -108,51 +150,60 @@ router.get(
 );
 
 router.get(
-  '/auth/twitch/refresh',
-  async (ctx, next) => {
-    const { refreshToken } = ctx.query;
+  '/auth/google/callback',
+  passport.authenticate('google', { session: false }),
+  (ctx: Router.IRouterContext, next: Koa.Next) => {
+    const requestId = ctx.cookies.get('requestId');
+    const { user } = ctx.state;
 
-    if (!refreshToken) {
-      throw new Error('no_refresh_token');
-    }
+    publishYoutubeUser(requestId, user);
 
-    await next();
-  },
-  async (ctx, next) => {
-    const { refreshToken } = ctx.query;
-
-    const params = new URLSearchParams();
-
-    params.append('client_id', twitch.clientId);
-    params.append('client_secret', twitch.clientSecret);
-    params.append('grant_type', 'refresh_token');
-    params.append('refresh_token', refreshToken);
-
-    const { data } = await axios.post('https://id.twitch.tv/oauth2/token', params);
-
-    ctx.body = {
-      accessToken: data.access_token,
-      refreshToken: data.refresh_token,
-    };
+    ctx.body = 'sign_in_successful';
   }
 );
 
-router.get('/youtube/channels', async (ctx, next) => {
-  const { channelName } = ctx.query;
-  const jwt = ctx.get('jwt');
+router.get('/auth/twitch/refresh', async (ctx, next) => {
+  const { refreshToken } = ctx.query;
 
-  jsonwebtoken.verify(jwt, serverConfig.jwtSecret);
+  if (!refreshToken) {
+    throw new Error('no_refresh_token');
+  }
 
-  ctx.body = await youtubeClient.getChannels(channelName);
+  const params = new URLSearchParams();
+
+  params.append('client_id', twitch.clientId);
+  params.append('client_secret', twitch.clientSecret);
+  params.append('grant_type', 'refresh_token');
+  params.append('refresh_token', refreshToken);
+
+  const { data } = await axios.post('https://id.twitch.tv/oauth2/token', params);
+
+  ctx.body = {
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token,
+  };
 });
 
-router.get('/youtube/streams', async (ctx, next) => {
-  const { channelId } = ctx.query;
-  const jwt = ctx.get('jwt');
+router.get('/auth/google/refresh', async (ctx, next) => {
+  const { refreshToken } = ctx.query;
 
-  jsonwebtoken.verify(jwt, serverConfig.jwtSecret);
+  if (!refreshToken) {
+    throw new Error('no_refresh_token');
+  }
 
-  ctx.body = await youtubeClient.getStreams(channelId);
+  const params = new URLSearchParams();
+
+  params.append('client_id', google.clientId);
+  params.append('client_secret', google.clientSecret);
+  params.append('grant_type', 'refresh_token');
+  params.append('refresh_token', refreshToken);
+
+  const { data } = await axios.post('https://www.googleapis.com/oauth2/v4/token', params);
+
+  ctx.body = {
+    accessToken: data.access_token,
+    refreshToken,
+  };
 });
 
 router.get('/auth', async (ctx, next) => {
