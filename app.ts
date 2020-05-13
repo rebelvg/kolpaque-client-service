@@ -124,7 +124,7 @@ router.get(
   },
   passport.authenticate('google', {
     session: false,
-    scope: [],
+    scope: ['https://www.googleapis.com/auth/youtube.readonly'],
   })
 );
 
