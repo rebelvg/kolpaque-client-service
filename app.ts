@@ -124,15 +124,7 @@ router.get(
   },
   passport.authenticate('google', {
     session: false,
-    scope: [
-      'https://www.googleapis.com/auth/plus.login',
-      'https://www.googleapis.com/auth/plus.me',
-      'https://www.googleapis.com/auth/userinfo.email',
-      'https://www.googleapis.com/auth/userinfo.profile',
-      'https://www.googleapis.com/auth/youtube.channel-memberships.creator',
-      'https://www.googleapis.com/auth/youtube.readonly',
-      'https://www.googleapis.com/auth/youtube.force-ssl',
-    ],
+    scope: ['https://www.googleapis.com/auth/youtube.readonly'],
   })
 );
 
