@@ -63,7 +63,7 @@ passport.use(
   'google',
   new OAuth2Strategy(
     {
-      authorizationURL: 'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline',
+      authorizationURL: 'https://accounts.google.com/o/oauth2/v2/auth?prompt=consent&access_type=offline',
       tokenURL: 'https://oauth2.googleapis.com/token',
       clientID: google.clientId,
       clientSecret: google.clientSecret,
