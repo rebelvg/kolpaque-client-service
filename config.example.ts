@@ -14,3 +14,10 @@ export const google = {
   clientSecret: 'client_secret',
   callbackUrl: 'http://localhost:3000/auth/google/callback',
 };
+
+export const youtube = {
+  apiKey: 'api_key',
+};
+
+export const DB_HOST = 'localhost';
+export const DB_NAME = 'klpqclient';

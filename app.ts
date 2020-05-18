@@ -8,6 +8,7 @@ import * as jsonwebtoken from 'jsonwebtoken';
 
 import { server as serverConfig, twitch, google } from './config';
 import { publishTwitchUser, publishKlpqUser, publishYoutubeUser } from './socket-server';
+import { youtubeClient } from './clients';
 
 export interface IUser {
   accessToken: string;
@@ -196,6 +197,24 @@ router.get('/auth/google/refresh', async (ctx, next) => {
     accessToken: data.access_token,
     refreshToken,
   };
+});
+
+router.get('/youtube/channels', async (ctx, next) => {
+  const { channelName } = ctx.query;
+  const jwt = ctx.get('jwt');
+
+  jsonwebtoken.verify(jwt, serverConfig.jwtSecret);
+
+  ctx.body = await youtubeClient.getChannels(channelName);
+});
+
+router.get('/youtube/streams', async (ctx, next) => {
+  const { channelId } = ctx.query;
+  const jwt = ctx.get('jwt');
+
+  jsonwebtoken.verify(jwt, serverConfig.jwtSecret);
+
+  ctx.body = await youtubeClient.getStreams(channelId);
 });
 
 router.get('/auth', async (ctx, next) => {

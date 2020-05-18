@@ -6,7 +6,8 @@
   "scripts": {
     "start": "ts-node .",
     "client": "ts-node socket-client.ts",
-    "pm2": "yarn install && pm2 restart client-service"
+    "pm2": "yarn install && pm2 restart client-service",
+    "migrate": "ts-node migrate.ts"
   },
   "dependencies": {
     "axios": "^0.19.2",
@@ -15,6 +16,7 @@
     "koa-passport": "^4.1.3",
     "koa-router": "^7.4.0",
     "lodash": "^4.17.15",
+    "mongodb": "^3.5.7",
     "passport-oauth2": "^1.5.0",
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0"
@@ -25,6 +27,7 @@
     "@types/koa-passport": "^4.0.2",
     "@types/koa-router": "^7.0.37",
     "@types/lodash": "^4.14.150",
+    "@types/mongodb": "^3.5.17",
     "@types/node": "13.13.5",
     "@types/passport-oauth2": "^1.4.9",
     "@types/socket.io": "^2.1.4",
