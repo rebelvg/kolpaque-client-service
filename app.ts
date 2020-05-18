@@ -178,6 +178,10 @@ router.get('/auth/twitch/refresh', async (ctx, next) => {
 });
 
 router.get('/auth/google/refresh', async (ctx, next) => {
+  ctx.body = null;
+
+  return;
+
   const { refreshToken } = ctx.query;
 
   if (!refreshToken) {
