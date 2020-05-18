@@ -4,6 +4,7 @@ import { server as httpServer, app } from './app';
 import { io } from './socket-server';
 
 import { server } from './config';
+import { connectMongoDriver } from './mongo';
 
 process.on('unhandledRejection', (reason, p) => {
   throw reason;
@@ -16,7 +17,9 @@ if (typeof server.port === 'string') {
   }
 }
 
-(() => {
+(async () => {
+  await connectMongoDriver();
+
   httpServer.listen(server.port, () => {
     console.log('http server running...');
 
