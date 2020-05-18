@@ -18,6 +18,7 @@ class YoutubeClient {
   public async getChannels(channelName: string): Promise<IYoutubeChannels> {
     const cacheData = await MongoCollections.youtube.findOne({
       endpoint: 'channels',
+      params: channelName,
     });
 
     if (cacheData) {
@@ -34,6 +35,7 @@ class YoutubeClient {
 
     await MongoCollections.youtube.insertOne({
       endpoint: 'channels',
+      params: channelName,
       data,
       createdDate: new Date(),
       expireDate: new Date(new Date().getTime() + 60 * MINUTE_IN_MILLISECONDS),
@@ -45,6 +47,7 @@ class YoutubeClient {
   public async getStreams(channelId: string): Promise<IYoutubeStreams> {
     const cacheData = await MongoCollections.youtube.findOne({
       endpoint: 'search',
+      params: channelId,
     });
 
     if (cacheData) {
@@ -63,6 +66,7 @@ class YoutubeClient {
 
     await MongoCollections.youtube.insertOne({
       endpoint: 'search',
+      params: channelId,
       data,
       createdDate: new Date(),
       expireDate: new Date(new Date().getTime() + 60 * MINUTE_IN_MILLISECONDS),
