@@ -11,6 +11,7 @@ export interface IYoutubeCollection {
   endpoint: string;
   params: string;
   data: any;
+  ip: string;
   createdDate: Date;
   expireDate: Date;
 }
@@ -32,11 +33,11 @@ export class MongoCollections {
     return mongoClientDb.collection(name);
   }
 
-  public static get migrations(): Collection<IMigration> {
+  public static get Migrations(): Collection<IMigration> {
     return mongoClientDb.collection<IMigration>('migrations');
   }
 
-  public static get youtube(): Collection<IYoutubeCollection> {
+  public static get Youtube(): Collection<IYoutubeCollection> {
     return mongoClientDb.collection<IYoutubeCollection>('youtube');
   }
 }

@@ -15,8 +15,10 @@ export interface IYoutubeStreams {
 class YoutubeClient {
   private baseUrl = 'https://www.googleapis.com/youtube/v3';
 
-  public async getChannels(channelName: string): Promise<IYoutubeChannels> {
-    const cacheData = await MongoCollections.youtube.findOne({
+  public async getChannels(channelName: string, ip: string): Promise<IYoutubeChannels> {
+    const { Youtube } = MongoCollections;
+
+    const cacheData = await Youtube.findOne({
       endpoint: 'channels',
       params: channelName,
     });
@@ -33,10 +35,11 @@ class YoutubeClient {
 
     const { data } = await axios.get<IYoutubeChannels>(url.href);
 
-    await MongoCollections.youtube.insertOne({
+    await Youtube.insertOne({
       endpoint: 'channels',
       params: channelName,
       data,
+      ip,
       createdDate: new Date(),
       expireDate: new Date(new Date().getTime() + 60 * MINUTE_IN_MILLISECONDS),
     });
@@ -44,8 +47,10 @@ class YoutubeClient {
     return data;
   }
 
-  public async getStreams(channelId: string): Promise<IYoutubeStreams> {
-    const cacheData = await MongoCollections.youtube.findOne({
+  public async getStreams(channelId: string, ip: string): Promise<IYoutubeStreams> {
+    const { Youtube } = MongoCollections;
+
+    const cacheData = await Youtube.findOne({
       endpoint: 'search',
       params: channelId,
     });
@@ -64,10 +69,11 @@ class YoutubeClient {
 
     const { data } = await axios.get<IYoutubeStreams>(url.href);
 
-    await MongoCollections.youtube.insertOne({
+    await Youtube.insertOne({
       endpoint: 'search',
       params: channelId,
       data,
+      ip,
       createdDate: new Date(),
       expireDate: new Date(new Date().getTime() + 60 * MINUTE_IN_MILLISECONDS),
     });

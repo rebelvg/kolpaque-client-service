@@ -209,7 +209,7 @@ router.get('/youtube/channels', async (ctx, next) => {
 
   jsonwebtoken.verify(jwt, serverConfig.jwtSecret);
 
-  ctx.body = await youtubeClient.getChannels(channelName);
+  ctx.body = await youtubeClient.getChannels(channelName, ctx.ip);
 });
 
 router.get('/youtube/streams', async (ctx, next) => {
@@ -218,7 +218,7 @@ router.get('/youtube/streams', async (ctx, next) => {
 
   jsonwebtoken.verify(jwt, serverConfig.jwtSecret);
 
-  ctx.body = await youtubeClient.getStreams(channelId);
+  ctx.body = await youtubeClient.getStreams(channelId, ctx.ip);
 });
 
 router.get('/auth', async (ctx, next) => {
