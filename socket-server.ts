@@ -33,17 +33,11 @@ export function publishKlpqUser(requestId: string, signedJwt: string) {
 }
 
 io.on('connection', (socket) => {
-  console.log('connection');
-
   socket.on('request_id', (requestId) => {
-    console.log(requestId);
-
     CLIENTS[requestId] = socket;
   });
 
   socket.on('disconnect', () => {
-    console.log('disconnect');
-
     _.forEach(CLIENTS, (client, id) => {
       if (client === socket) {
         delete CLIENTS[id];
