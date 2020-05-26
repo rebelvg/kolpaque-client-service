@@ -1,9 +1,9 @@
 import * as fs from 'fs';
 
-import { server as httpServer, app } from './app';
+import { httpServer } from './app';
 import { io } from './socket-server';
 
-import { server } from './config';
+import { SERVER } from './config';
 import { connectMongoDriver } from './mongo';
 
 process.on('unhandledRejection', (reason, p) => {
@@ -11,21 +11,21 @@ process.on('unhandledRejection', (reason, p) => {
 });
 
 // remove previous unix socket
-if (typeof server.port === 'string') {
-  if (fs.existsSync(server.port)) {
-    fs.unlinkSync(server.port);
+if (typeof SERVER.port === 'string') {
+  if (fs.existsSync(SERVER.port)) {
+    fs.unlinkSync(SERVER.port);
   }
 }
 
 (async () => {
   await connectMongoDriver();
 
-  httpServer.listen(server.port, () => {
+  httpServer.listen(SERVER.port, () => {
     console.log('http server running...');
 
     // set unix socket rw rights for nginx
-    if (typeof server.port === 'string') {
-      fs.chmodSync(server.port, '777');
+    if (typeof SERVER.port === 'string') {
+      fs.chmodSync(SERVER.port, '777');
     }
   });
 })();

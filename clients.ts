@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { youtube } from './config';
+import { YOUTUBE } from './config';
 import { MongoCollections } from './mongo';
 
 const MINUTE_IN_MILLISECONDS = 60 * 1000;
@@ -31,7 +31,7 @@ class YoutubeClient {
 
     url.searchParams.set('forUsername', channelName);
     url.searchParams.set('part', 'id');
-    url.searchParams.set('key', youtube.apiKey);
+    url.searchParams.set('key', YOUTUBE.apiKey);
 
     const { data } = await axios.get<IYoutubeChannels>(url.href);
 
@@ -65,7 +65,7 @@ class YoutubeClient {
     url.searchParams.set('part', 'snippet');
     url.searchParams.set('type', 'video');
     url.searchParams.set('eventType', 'live');
-    url.searchParams.set('key', youtube.apiKey);
+    url.searchParams.set('key', YOUTUBE.apiKey);
 
     const { data } = await axios.get<IYoutubeStreams>(url.href);
 

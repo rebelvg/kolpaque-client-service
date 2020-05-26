@@ -6,7 +6,7 @@ import * as http from 'http';
 import axios from 'axios';
 import * as jsonwebtoken from 'jsonwebtoken';
 
-import { server as serverConfig, twitch, google } from './config';
+import { SERVER, TWITCH, GOOGLE } from './config';
 import { publishTwitchUser, publishKlpqUser, publishYoutubeUser } from './socket-server';
 import { youtubeClient } from './clients';
 
@@ -35,7 +35,7 @@ declare module 'koa-router' {
 
 export const app = new Koa();
 
-export const server = http.createServer(app.callback());
+export const httpServer = http.createServer(app.callback());
 
 app.use(passport.initialize());
 
@@ -45,9 +45,9 @@ passport.use(
     {
       authorizationURL: 'https://id.twitch.tv/oauth2/authorize',
       tokenURL: 'https://id.twitch.tv/oauth2/token',
-      clientID: twitch.clientId,
-      clientSecret: twitch.clientSecret,
-      callbackURL: twitch.callbackUrl,
+      clientID: TWITCH.clientId,
+      clientSecret: TWITCH.clientSecret,
+      callbackURL: TWITCH.callbackUrl,
     },
     function (accessToken, refreshToken, profile, done) {
       const user = {
@@ -66,9 +66,9 @@ passport.use(
     {
       authorizationURL: 'https://accounts.google.com/o/oauth2/v2/auth?prompt=consent&access_type=offline',
       tokenURL: 'https://oauth2.googleapis.com/token',
-      clientID: google.clientId,
-      clientSecret: google.clientSecret,
-      callbackURL: google.callbackUrl,
+      clientID: GOOGLE.clientId,
+      clientSecret: GOOGLE.clientSecret,
+      callbackURL: GOOGLE.callbackUrl,
     },
     function (accessToken, refreshToken, profile, done) {
       const user = {
@@ -164,8 +164,8 @@ router.get('/auth/twitch/refresh', async (ctx, next) => {
 
   const params = new URLSearchParams();
 
-  params.append('client_id', twitch.clientId);
-  params.append('client_secret', twitch.clientSecret);
+  params.append('client_id', TWITCH.clientId);
+  params.append('client_secret', TWITCH.clientSecret);
   params.append('grant_type', 'refresh_token');
   params.append('refresh_token', refreshToken);
 
@@ -190,8 +190,8 @@ router.get('/auth/google/refresh', async (ctx, next) => {
 
   const params = new URLSearchParams();
 
-  params.append('client_id', google.clientId);
-  params.append('client_secret', google.clientSecret);
+  params.append('client_id', GOOGLE.clientId);
+  params.append('client_secret', GOOGLE.clientSecret);
   params.append('grant_type', 'refresh_token');
   params.append('refresh_token', refreshToken);
 
@@ -207,7 +207,7 @@ router.get('/youtube/channels', async (ctx, next) => {
   const { channelName } = ctx.query;
   const jwt = ctx.get('jwt');
 
-  jsonwebtoken.verify(jwt, serverConfig.jwtSecret);
+  jsonwebtoken.verify(jwt, SERVER.jwtSecret);
 
   ctx.body = await youtubeClient.getChannels(channelName, ctx.ip);
 });
@@ -216,13 +216,13 @@ router.get('/youtube/streams', async (ctx, next) => {
   const { channelId } = ctx.query;
   const jwt = ctx.get('jwt');
 
-  jsonwebtoken.verify(jwt, serverConfig.jwtSecret);
+  jsonwebtoken.verify(jwt, SERVER.jwtSecret);
 
   ctx.body = await youtubeClient.getStreams(channelId, ctx.ip);
 });
 
 router.get('/auth', async (ctx, next) => {
-  const jwt = jsonwebtoken.sign({ isLoggedIn: true }, serverConfig.jwtSecret, { expiresIn: '1d' });
+  const jwt = jsonwebtoken.sign({ isLoggedIn: true }, SERVER.jwtSecret, { expiresIn: '1d' });
 
   ctx.body = {
     jwt,
