@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "client-service",
+      "name": "kolpaque-client-service",
       "interpreter": "none",
       "script": "yarn",
       "args": "start",
