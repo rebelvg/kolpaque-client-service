@@ -41,7 +41,7 @@ class YoutubeClient {
       data,
       ip,
       createdDate: new Date(),
-      expireDate: new Date(new Date().getTime() + 60 * MINUTE_IN_MILLISECONDS),
+      expireDate: new Date(new Date().getTime() + 7 * 24 * 60 * MINUTE_IN_MILLISECONDS),
     });
 
     return data;
