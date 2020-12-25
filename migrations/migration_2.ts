@@ -8,6 +8,6 @@ export async function up(): Promise<void> {
       endpoint: 1,
       params: 1,
     },
-    { unique: true }
+    { unique: true },
   );
 }

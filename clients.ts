@@ -15,7 +15,10 @@ export interface IYoutubeStreams {
 class YoutubeClient {
   private baseUrl = 'https://www.googleapis.com/youtube/v3';
 
-  public async getChannels(channelName: string, ip: string): Promise<IYoutubeChannels> {
+  public async getChannels(
+    channelName: string,
+    ip: string,
+  ): Promise<IYoutubeChannels> {
     const { Youtube } = MongoCollections;
 
     const cacheData = await Youtube.findOne({
@@ -41,13 +44,18 @@ class YoutubeClient {
       data,
       ip,
       createdDate: new Date(),
-      expireDate: new Date(new Date().getTime() + 7 * 24 * 60 * MINUTE_IN_MILLISECONDS),
+      expireDate: new Date(
+        new Date().getTime() + 7 * 24 * 60 * MINUTE_IN_MILLISECONDS,
+      ),
     });
 
     return data;
   }
 
-  public async getStreams(channelId: string, ip: string): Promise<IYoutubeStreams> {
+  public async getStreams(
+    channelId: string,
+    ip: string,
+  ): Promise<IYoutubeStreams> {
     const { Youtube } = MongoCollections;
 
     const cacheData = await Youtube.findOne({

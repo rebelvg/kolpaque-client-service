@@ -7,6 +7,6 @@ export async function up(): Promise<void> {
     {
       expireDate: 1,
     },
-    { expireAfterSeconds: 0 }
+    { expireAfterSeconds: 0 },
   );
 }
