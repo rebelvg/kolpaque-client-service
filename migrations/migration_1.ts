@@ -1,9 +1,9 @@
-import { MongoCollections } from '../mongo';
+import { MongoCollections } from '../src/mongo';
 
 export async function up(): Promise<void> {
-  const youtubeCollection = MongoCollections.youtube;
+  const { Youtube } = MongoCollections;
 
-  await youtubeCollection.createIndex(
+  await Youtube.createIndex(
     {
       expireDate: 1,
     },

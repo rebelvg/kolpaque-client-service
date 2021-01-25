@@ -1,6 +1,6 @@
 import { MongoClient, Db, Collection } from 'mongodb';
 
-import { DB_HOST, DB_NAME } from './config';
+import { DB_HOST, DB_NAME } from '../config';
 
 export interface IMigration {
   name: string;

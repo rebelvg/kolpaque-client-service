@@ -6,12 +6,8 @@ import * as http from 'http';
 import axios from 'axios';
 import * as jsonwebtoken from 'jsonwebtoken';
 
-import { SERVER, TWITCH, GOOGLE } from './config';
-import {
-  publishTwitchUser,
-  publishKlpqUser,
-  publishYoutubeUser,
-} from './socket-server';
+import { SERVER, TWITCH, GOOGLE } from '../config';
+import { publishTwitchUser, publishYoutubeUser } from './socket-server';
 import { youtubeClient } from './clients';
 
 export interface IUser {
@@ -76,7 +72,7 @@ passport.use(
       callbackURL: GOOGLE.callbackUrl,
     },
     function (accessToken, refreshToken, profile, done) {
-      const user = {
+      const user: IUser = {
         accessToken,
         refreshToken,
       };

@@ -1,5 +1,6 @@
 import * as SocketServer from 'socket.io';
 import * as _ from 'lodash';
+
 import { IUser } from './app';
 
 export const io = SocketServer();

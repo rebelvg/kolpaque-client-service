@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { YOUTUBE } from './config';
+
+import { YOUTUBE } from '../config';
 import { MongoCollections } from './mongo';
 
 const MINUTE_IN_MILLISECONDS = 60 * 1000;

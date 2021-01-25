@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+  kolpaque_client_db:
+    image: mongo:latest
+    container_name: kolpaque_client_db
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - kolpaque_client_db:/data/db
+    ports:
+      - 27017:27017
+
+volumes:
+  kolpaque_client_db:
