@@ -16,6 +16,12 @@ export interface IYoutubeCollection {
   expireDate: Date;
 }
 
+export interface ISyncCollection {
+  id: string;
+  version: string;
+  channels: any[];
+}
+
 let mongoClientDb: Db;
 
 export async function connectMongoDriver(): Promise<MongoClient> {
@@ -39,5 +45,9 @@ export class MongoCollections {
 
   public static get Youtube(): Collection<IYoutubeCollection> {
     return mongoClientDb.collection<IYoutubeCollection>('youtube');
+  }
+
+  public static get Sync(): Collection<ISyncCollection> {
+    return mongoClientDb.collection<ISyncCollection>('sync');
   }
 }

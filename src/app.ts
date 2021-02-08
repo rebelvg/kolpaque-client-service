@@ -5,10 +5,13 @@ import * as OAuth2Strategy from 'passport-oauth2';
 import * as http from 'http';
 import axios from 'axios';
 import * as jsonwebtoken from 'jsonwebtoken';
+import * as uuid from 'uuid';
+import * as _ from 'lodash';
 
 import { SERVER, TWITCH, GOOGLE } from '../config';
 import { publishTwitchUser, publishYoutubeUser } from './socket-server';
 import { youtubeClient } from './clients';
+import { MongoCollections } from './mongo';
 
 export interface IUser {
   accessToken: string;
@@ -236,6 +239,74 @@ router.get('/auth', async (ctx, next) => {
   ctx.body = {
     jwt,
   };
+});
+
+router.get('/sync/:id', async (ctx, next) => {
+  const { id } = ctx.params;
+
+  const { Sync } = MongoCollections;
+
+  const syncRecord = await Sync.findOne({
+    id,
+  });
+
+  if (!syncRecord) {
+    ctx.status = 404;
+
+    return;
+  }
+
+  ctx.body = syncRecord;
+});
+
+router.post('/sync/:id', async (ctx, next) => {
+  const { id } = ctx.params;
+  const { channels: newChannels } = ctx.request.body;
+
+  const { Sync } = MongoCollections;
+
+  const syncRecord = await Sync.findOne({
+    id,
+  });
+
+  const version = uuid.v4();
+
+  if (!syncRecord) {
+    await Sync.insertOne({
+      id,
+      version,
+      channels: newChannels,
+    });
+
+    ctx.body = {
+      id,
+      version,
+    };
+
+    return;
+  }
+
+  const { channels } = syncRecord;
+
+  _.forEach(newChannels, (channel) => {
+    const foundChannel = _.find(channels, { link: channel.link });
+
+    if (!foundChannel) {
+      channels.push(channel);
+
+      return;
+    }
+
+    _.forEach(foundChannel, (value, key) => {
+      channel[key] = value;
+    });
+  });
+
+  await Sync.insertOne({
+    id,
+    version,
+    channels,
+  });
 });
 
 app.use(router.routes());
