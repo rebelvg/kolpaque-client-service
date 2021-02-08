@@ -10,7 +10,7 @@
     "pm2": "yarn install && yarn run migrate && pm2 restart kolpaque-client-service"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.6.2",
     "koa-bodyparser": "^4.3.0",
