@@ -18,7 +18,6 @@ export interface IYoutubeCollection {
 
 export interface ISyncCollection {
   id: string;
-  version: string;
   channels: any[];
 }
 

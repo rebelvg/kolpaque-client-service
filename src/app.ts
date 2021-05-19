@@ -259,9 +259,36 @@ router.get('/sync/:id', async (ctx, next) => {
   ctx.body = syncRecord;
 });
 
+router.post('/sync', async (ctx, next) => {
+  const { id, channels } = ctx.request.body;
+
+  const { Sync } = MongoCollections;
+
+  if (!id) {
+    const id = uuid.v4();
+
+    await Sync.insertOne({
+      id,
+      channels,
+    });
+
+    ctx.body = {
+      id,
+    };
+
+    return;
+  }
+
+  await Sync.updateOne({ id }, { channels });
+
+  ctx.body = {
+    id,
+  };
+});
+
 router.post('/sync/:id', async (ctx, next) => {
   const { id } = ctx.params;
-  const { channels: newChannels } = ctx.request.body;
+  const { channels } = ctx.request.body;
 
   const { Sync } = MongoCollections;
 
@@ -269,44 +296,11 @@ router.post('/sync/:id', async (ctx, next) => {
     id,
   });
 
-  const version = uuid.v4();
-
   if (!syncRecord) {
-    await Sync.insertOne({
-      id,
-      version,
-      channels: newChannels,
-    });
-
-    ctx.body = {
-      id,
-      version,
-    };
-
     return;
   }
 
-  const { channels } = syncRecord;
-
-  _.forEach(newChannels, (channel) => {
-    const foundChannel = _.find(channels, { link: channel.link });
-
-    if (!foundChannel) {
-      channels.push(channel);
-
-      return;
-    }
-
-    _.forEach(foundChannel, (value, key) => {
-      channel[key] = value;
-    });
-  });
-
-  await Sync.insertOne({
-    id,
-    version,
-    channels,
-  });
+  await Sync.updateOne({ id }, { channels });
 });
 
 app.use(router.routes());
