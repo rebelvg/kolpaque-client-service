@@ -12,6 +12,7 @@ import { SERVER, TWITCH, GOOGLE } from '../config';
 import { publishTwitchUser, publishYoutubeUser } from './socket-server';
 import { youtubeClient } from './clients';
 import { MongoCollections } from './mongo';
+import { Readable } from 'stream';
 
 export interface IUser {
   accessToken: string;
@@ -91,6 +92,8 @@ app.use(async (ctx, next) => {
   try {
     await next();
   } catch (error) {
+    console.error(error);
+
     ctx.status = error.status || 500;
     ctx.body = { error: error.message };
   }
@@ -260,7 +263,7 @@ router.get('/sync/:id', async (ctx, next) => {
 });
 
 router.post('/sync', async (ctx, next) => {
-  const { id, channels } = ctx.request.body;
+  const { id, channels } = await readBody(ctx.req);
 
   const { Sync } = MongoCollections;
 
@@ -279,29 +282,35 @@ router.post('/sync', async (ctx, next) => {
     return;
   }
 
-  await Sync.updateOne({ id }, { channels });
+  await Sync.updateOne(
+    { id },
+    {
+      $set: {
+        channels,
+      },
+    },
+  );
 
   ctx.body = {
     id,
   };
 });
 
-router.post('/sync/:id', async (ctx, next) => {
-  const { id } = ctx.params;
-  const { channels } = ctx.request.body;
+function readBody(readStream: Readable): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const allData: Buffer[] = [];
 
-  const { Sync } = MongoCollections;
+    readStream.on('data', (data: Buffer) => {
+      allData.push(data);
+    });
 
-  const syncRecord = await Sync.findOne({
-    id,
+    readStream.on('error', reject);
+
+    readStream.on('close', () => {
+      resolve(JSON.parse(Buffer.concat(allData).toString()));
+    });
   });
-
-  if (!syncRecord) {
-    return;
-  }
-
-  await Sync.updateOne({ id }, { channels });
-});
+}
 
 app.use(router.routes());
 
