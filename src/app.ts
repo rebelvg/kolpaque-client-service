@@ -107,7 +107,7 @@ router.get(
       throw new Error('no_request_id');
     }
 
-    ctx.cookies.set('requestId', requestId);
+    ctx.cookies.set('requestId', requestId as string);
 
     await next();
   },
@@ -123,7 +123,7 @@ router.get(
       throw new Error('no_request_id');
     }
 
-    ctx.cookies.set('requestId', requestId);
+    ctx.cookies.set('requestId', requestId as string);
 
     await next();
   },
@@ -171,7 +171,7 @@ router.get('/auth/twitch/refresh', async (ctx, next) => {
   params.append('client_id', TWITCH.clientId);
   params.append('client_secret', TWITCH.clientSecret);
   params.append('grant_type', 'refresh_token');
-  params.append('refresh_token', refreshToken);
+  params.append('refresh_token', refreshToken as string);
 
   const { data } = await axios.post(
     'https://id.twitch.tv/oauth2/token',
@@ -200,7 +200,7 @@ router.get('/auth/google/refresh', async (ctx, next) => {
   params.append('client_id', GOOGLE.clientId);
   params.append('client_secret', GOOGLE.clientSecret);
   params.append('grant_type', 'refresh_token');
-  params.append('refresh_token', refreshToken);
+  params.append('refresh_token', refreshToken as string);
 
   const { data } = await axios.post(
     'https://www.googleapis.com/oauth2/v4/token',
@@ -219,7 +219,7 @@ router.get('/youtube/channels', async (ctx, next) => {
 
   jsonwebtoken.verify(jwt, SERVER.jwtSecret);
 
-  ctx.body = await youtubeClient.getChannels(channelName, ctx.ip);
+  ctx.body = await youtubeClient.getChannels(channelName as string, ctx.ip);
 });
 
 router.get('/youtube/streams', async (ctx, next) => {
@@ -228,7 +228,7 @@ router.get('/youtube/streams', async (ctx, next) => {
 
   jsonwebtoken.verify(jwt, SERVER.jwtSecret);
 
-  ctx.body = await youtubeClient.getStreams(channelId, ctx.ip);
+  ctx.body = await youtubeClient.getStreams(channelId as string, ctx.ip);
 });
 
 router.get('/auth', async (ctx, next) => {
