@@ -7,6 +7,7 @@ import axios from 'axios';
 import * as jsonwebtoken from 'jsonwebtoken';
 import * as uuid from 'uuid';
 import * as _ from 'lodash';
+import * as bodyParser from 'koa-bodyparser';
 
 import { SERVER, TWITCH, GOOGLE } from '../config';
 import { publishTwitchUser, publishYoutubeUser } from './socket-server';
@@ -38,6 +39,8 @@ declare module 'koa-router' {
 }
 
 export const app = new Koa();
+
+app.use(bodyParser({ enableTypes: ['json'] }));
 
 export const httpServer = http.createServer(app.callback());
 
@@ -265,7 +268,7 @@ router.get('/sync/:id', async (ctx, next) => {
 });
 
 router.post('/sync', async (ctx, next) => {
-  const { id, channels } = await readBody(ctx.req);
+  const { id, channels } = ctx.request.body;
 
   const { Sync } = MongoCollections;
 
@@ -297,26 +300,6 @@ router.post('/sync', async (ctx, next) => {
     id,
   };
 });
-
-function readBody(readStream: Readable): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const allData: Buffer[] = [];
-
-    readStream.on('data', (data: Buffer) => {
-      allData.push(data);
-    });
-
-    readStream.on('error', reject);
-
-    readStream.on('close', () => {
-      try {
-        resolve(JSON.parse(Buffer.concat(allData).toString()));
-      } catch (error) {
-        reject(error);
-      }
-    });
-  });
-}
 
 app.use(router.routes());
 
