@@ -247,6 +247,8 @@ router.get('/auth', async (ctx, next) => {
 router.get('/sync/:id', async (ctx, next) => {
   const { id } = ctx.params;
 
+  console.log(id);
+
   const { Sync } = MongoCollections;
 
   const syncRecord = await Sync.findOne({
@@ -307,7 +309,11 @@ function readBody(readStream: Readable): Promise<any> {
     readStream.on('error', reject);
 
     readStream.on('close', () => {
-      resolve(JSON.parse(Buffer.concat(allData).toString()));
+      try {
+        resolve(JSON.parse(Buffer.concat(allData).toString()));
+      } catch (error) {
+        reject(error);
+      }
     });
   });
 }
