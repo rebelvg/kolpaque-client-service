@@ -13,7 +13,6 @@ import { SERVER, TWITCH, GOOGLE } from '../config';
 import { publishTwitchUser, publishYoutubeUser } from './socket-server';
 import { youtubeClient } from './clients';
 import { MongoCollections } from './mongo';
-import { Readable } from 'stream';
 
 export interface IUser {
   accessToken: string;
@@ -39,6 +38,8 @@ declare module 'koa-router' {
 }
 
 export const app = new Koa();
+
+app.proxy = true;
 
 app.use(bodyParser({ enableTypes: ['json'] }));
 
@@ -278,6 +279,10 @@ router.post('/sync', async (ctx, next) => {
     await Sync.insertOne({
       id,
       channels,
+      createdDate: new Date(),
+      updateDate: new Date(),
+      ipCreated: ctx.ip,
+      ipUpdated: ctx.ip,
     });
 
     ctx.body = {
@@ -292,6 +297,8 @@ router.post('/sync', async (ctx, next) => {
     {
       $set: {
         channels,
+        updateDate: new Date(),
+        ipUpdated: ctx.ip,
       },
     },
   );
