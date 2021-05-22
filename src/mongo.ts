@@ -18,7 +18,7 @@ export interface IYoutubeCollection {
 
 export interface ISyncCollection {
   id: string;
-  channels: any[];
+  channels: any;
   ipCreated: string;
   ipUpdated: string;
   createdDate: Date;
