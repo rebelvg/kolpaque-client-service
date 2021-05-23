@@ -254,7 +254,7 @@ router.get('/auth', async (ctx, next) => {
 });
 
 router.get('/klpq/auth', async (ctx, next) => {
-  const redirectUri = `${SERVER.CALLBACK_URL}/auth/callback?token=`;
+  const redirectUri = `${SERVER.CALLBACK_URL}/klpq/auth/callback?token=`;
 
   ctx.session.token = jsonwebtoken.sign({}, SERVER.JWT_SECRET, {
     expiresIn: '1m',
