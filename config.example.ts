@@ -1,23 +1,28 @@
 export const SERVER = {
-  port: 8000,
-  jwtSecret: 'jwt_secret',
+  PORT: 8000,
+  JWT_SECRET: 'jwt_secret',
+  CALLBACK_URL: 'http://localhost:8000',
 };
 
 export const TWITCH = {
-  clientId: 'client_id',
-  clientSecret: 'client_secret',
-  callbackUrl: 'http://localhost:8000/auth/twitch/callback',
+  CLIENT_UD: 'client_id',
+  CLIENT_SECRET: 'client_secret',
+  CALLBACK_URL: 'http://localhost:8000/auth/twitch/callback',
 };
 
 export const GOOGLE = {
-  clientId: 'client_id',
-  clientSecret: 'client_secret',
-  callbackUrl: 'http://localhost:8000/auth/google/callback',
+  CLIENT_UD: 'client_id',
+  CLIENT_SECRET: 'client_secret',
+  CALLBACK_URL: 'http://localhost:8000/auth/google/callback',
 };
 
 export const YOUTUBE = {
-  apiKey: 'api_key',
+  API_KEY: 'api_key',
 };
 
 export const DB_HOST = 'localhost';
 export const DB_NAME = 'klpqclient';
+
+export const API = {
+  AUTH_SERVICE_URL: 'http://localhost:9000',
+};

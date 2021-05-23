@@ -8,8 +8,9 @@ import * as jsonwebtoken from 'jsonwebtoken';
 import * as uuid from 'uuid';
 import * as _ from 'lodash';
 import * as bodyParser from 'koa-bodyparser';
+import * as koaSession from 'koa-session';
 
-import { SERVER, TWITCH, GOOGLE } from '../config';
+import { SERVER, TWITCH, GOOGLE, API } from '../config';
 import { publishTwitchUser, publishYoutubeUser } from './socket-server';
 import { youtubeClient } from './clients';
 import { MongoCollections } from './mongo';
@@ -53,9 +54,9 @@ passport.use(
     {
       authorizationURL: 'https://id.twitch.tv/oauth2/authorize',
       tokenURL: 'https://id.twitch.tv/oauth2/token',
-      clientID: TWITCH.clientId,
-      clientSecret: TWITCH.clientSecret,
-      callbackURL: TWITCH.callbackUrl,
+      clientID: TWITCH.CLIENT_ID,
+      clientSecret: TWITCH.CLIENT_SECRET,
+      callbackURL: TWITCH.CALLBACK_URL,
     },
     function (accessToken, refreshToken, profile, done) {
       const user: IUser = {
@@ -75,9 +76,9 @@ passport.use(
       authorizationURL:
         'https://accounts.google.com/o/oauth2/v2/auth?prompt=consent&access_type=offline',
       tokenURL: 'https://oauth2.googleapis.com/token',
-      clientID: GOOGLE.clientId,
-      clientSecret: GOOGLE.clientSecret,
-      callbackURL: GOOGLE.callbackUrl,
+      clientID: GOOGLE.CLIENT_ID,
+      clientSecret: GOOGLE.CLIENT_SECRET,
+      callbackURL: GOOGLE.CALLBACK_URL,
     },
     function (accessToken, refreshToken, profile, done) {
       const user: IUser = {
@@ -102,6 +103,10 @@ app.use(async (ctx, next) => {
     ctx.body = { error: error.message };
   }
 });
+
+app.keys = [uuid.v4()];
+
+app.use(koaSession({ signed: true }, app));
 
 const router = new Router();
 
@@ -175,8 +180,8 @@ router.get('/auth/twitch/refresh', async (ctx, next) => {
 
   const params = new URLSearchParams();
 
-  params.append('client_id', TWITCH.clientId);
-  params.append('client_secret', TWITCH.clientSecret);
+  params.append('client_id', TWITCH.CLIENT_ID);
+  params.append('client_secret', TWITCH.CLIENT_SECRET);
   params.append('grant_type', 'refresh_token');
   params.append('refresh_token', refreshToken as string);
 
@@ -204,8 +209,8 @@ router.get('/auth/google/refresh', async (ctx, next) => {
 
   const params = new URLSearchParams();
 
-  params.append('client_id', GOOGLE.clientId);
-  params.append('client_secret', GOOGLE.clientSecret);
+  params.append('client_id', GOOGLE.CLIENT_ID);
+  params.append('client_secret', GOOGLE.CLIENT_SECRET);
   params.append('grant_type', 'refresh_token');
   params.append('refresh_token', refreshToken as string);
 
@@ -224,7 +229,7 @@ router.get('/youtube/channels', async (ctx, next) => {
   const { channelName } = ctx.query;
   const jwt = ctx.get('jwt');
 
-  jsonwebtoken.verify(jwt, SERVER.jwtSecret);
+  // jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, { ignoreExpiration: true });
 
   ctx.body = await youtubeClient.getChannels(channelName as string, ctx.ip);
 });
@@ -233,14 +238,41 @@ router.get('/youtube/streams', async (ctx, next) => {
   const { channelId } = ctx.query;
   const jwt = ctx.get('jwt');
 
-  jsonwebtoken.verify(jwt, SERVER.jwtSecret);
+  // jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, { ignoreExpiration: true });
 
   ctx.body = await youtubeClient.getStreams(channelId as string, ctx.ip);
 });
 
 router.get('/auth', async (ctx, next) => {
-  const jwt = jsonwebtoken.sign({ isLoggedIn: true }, SERVER.jwtSecret, {
-    expiresIn: '1d',
+  const jwt = jsonwebtoken.sign({ isLoggedIn: true }, SERVER.JWT_SECRET, {
+    noTimestamp: true,
+  });
+
+  ctx.body = {
+    jwt,
+  };
+});
+
+router.get('/klpq/auth', async (ctx, next) => {
+  const redirectUri = `${SERVER.CALLBACK_URL}/auth/callback?token=`;
+
+  ctx.session.token = jsonwebtoken.sign({}, SERVER.JWT_SECRET, {
+    expiresIn: '1m',
+  });
+
+  ctx.redirect(
+    `${API.AUTH_SERVICE_URL}?redirectUri=${encodeURIComponent(redirectUri)}`,
+  );
+});
+
+router.get('/klpq/auth/callback', (ctx, next) => {
+  const { token: jwtToken } = ctx.query;
+  const { token: verifyToken } = ctx.session;
+
+  jsonwebtoken.verify(verifyToken, SERVER.JWT_SECRET);
+
+  const jwt = jsonwebtoken.sign({ jwtToken }, SERVER.JWT_SECRET, {
+    noTimestamp: true,
   });
 
   ctx.body = {
@@ -250,8 +282,6 @@ router.get('/auth', async (ctx, next) => {
 
 router.get('/sync/:id', async (ctx, next) => {
   const { id } = ctx.params;
-
-  console.log(id);
 
   const { Sync } = MongoCollections;
 

@@ -11,21 +11,21 @@ process.on('unhandledRejection', (reason, p) => {
 });
 
 // remove previous unix socket
-if (typeof SERVER.port === 'string') {
-  if (fs.existsSync(SERVER.port)) {
-    fs.unlinkSync(SERVER.port);
+if (typeof SERVER.PORT === 'string') {
+  if (fs.existsSync(SERVER.PORT)) {
+    fs.unlinkSync(SERVER.PORT);
   }
 }
 
 (async () => {
   await connectMongoDriver();
 
-  httpServer.listen(SERVER.port, () => {
-    console.log('http server running...');
+  httpServer.listen(SERVER.PORT, () => {
+    console.log('http_server_running');
 
     // set unix socket rw rights for nginx
-    if (typeof SERVER.port === 'string') {
-      fs.chmodSync(SERVER.port, '777');
+    if (typeof SERVER.PORT === 'string') {
+      fs.chmodSync(SERVER.PORT, '777');
     }
   });
 })();
@@ -33,5 +33,5 @@ if (typeof SERVER.port === 'string') {
 (() => {
   io.listen(httpServer);
 
-  console.log('socket server running...');
+  console.log('socket_server_running');
 })();

@@ -35,7 +35,7 @@ class YoutubeClient {
 
     url.searchParams.set('forUsername', channelName);
     url.searchParams.set('part', 'id');
-    url.searchParams.set('key', YOUTUBE.apiKey);
+    url.searchParams.set('key', YOUTUBE.API_KEY);
 
     const { data } = await axios.get<IYoutubeChannels>(url.href);
 
@@ -74,7 +74,7 @@ class YoutubeClient {
     url.searchParams.set('part', 'snippet');
     url.searchParams.set('type', 'video');
     url.searchParams.set('eventType', 'live');
-    url.searchParams.set('key', YOUTUBE.apiKey);
+    url.searchParams.set('key', YOUTUBE.API_KEY);
 
     const { data } = await axios.get<IYoutubeStreams>(url.href);
 
