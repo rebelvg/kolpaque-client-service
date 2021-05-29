@@ -2,7 +2,7 @@ import * as SocketClient from 'socket.io-client';
 
 import { SERVER } from '../config';
 
-const io = SocketClient(`http://localhost:${SERVER.port}`);
+const io = SocketClient(`http://localhost:${SERVER.PORT}`);
 
 io.on('twitch_user', (user) => {
   console.log(user);
