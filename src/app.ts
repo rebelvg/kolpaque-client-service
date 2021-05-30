@@ -11,7 +11,11 @@ import * as bodyParser from 'koa-bodyparser';
 import * as koaSession from 'koa-session';
 
 import { SERVER, TWITCH, GOOGLE, API } from '../config';
-import { publishTwitchUser, publishYoutubeUser } from './socket-server';
+import {
+  publishKlpqUser,
+  publishTwitchUser,
+  publishYoutubeUser,
+} from './socket-server';
 import { youtubeClient } from './clients';
 import { MongoCollections } from './mongo';
 
@@ -97,6 +101,7 @@ app.use(async (ctx, next) => {
   try {
     await next();
   } catch (error) {
+    console.error(ctx.method, ctx.href, JSON.stringify(ctx.headers), ctx.body);
     console.error(error);
 
     ctx.status = error.status || 500;
@@ -127,25 +132,6 @@ router.get(
 );
 
 router.get(
-  '/auth/google',
-  async (ctx, next) => {
-    const { requestId } = ctx.query;
-
-    if (!requestId) {
-      throw new Error('no_request_id');
-    }
-
-    ctx.cookies.set('requestId', requestId as string);
-
-    await next();
-  },
-  passport.authenticate('google', {
-    session: false,
-    scope: ['https://www.googleapis.com/auth/youtube.readonly'],
-  }),
-);
-
-router.get(
   '/auth/twitch/callback',
   passport.authenticate('twitch', { session: false }),
   (ctx: Router.IRouterContext, next: Koa.Next) => {
@@ -153,19 +139,6 @@ router.get(
     const { user } = ctx.state;
 
     publishTwitchUser(requestId, user);
-
-    ctx.body = 'sign_in_successful';
-  },
-);
-
-router.get(
-  '/auth/google/callback',
-  passport.authenticate('google', { session: false }),
-  (ctx: Router.IRouterContext, next: Koa.Next) => {
-    const requestId = ctx.cookies.get('requestId');
-    const { user } = ctx.state;
-
-    publishYoutubeUser(requestId, user);
 
     ctx.body = 'sign_in_successful';
   },
@@ -195,6 +168,38 @@ router.get('/auth/twitch/refresh', async (ctx, next) => {
     refreshToken: data.refresh_token,
   };
 });
+
+router.get(
+  '/auth/google',
+  async (ctx, next) => {
+    const { requestId } = ctx.query;
+
+    if (!requestId) {
+      throw new Error('no_request_id');
+    }
+
+    ctx.cookies.set('requestId', requestId as string);
+
+    await next();
+  },
+  passport.authenticate('google', {
+    session: false,
+    scope: ['https://www.googleapis.com/auth/youtube.readonly'],
+  }),
+);
+
+router.get(
+  '/auth/google/callback',
+  passport.authenticate('google', { session: false }),
+  (ctx: Router.IRouterContext, next: Koa.Next) => {
+    const requestId = ctx.cookies.get('requestId');
+    const { user } = ctx.state;
+
+    publishYoutubeUser(requestId, user);
+
+    ctx.body = 'sign_in_successful';
+  },
+);
 
 router.get('/auth/google/refresh', async (ctx, next) => {
   ctx.body = null;
@@ -229,7 +234,7 @@ router.get('/youtube/channels', async (ctx, next) => {
   const { channelName } = ctx.query;
   const jwt = ctx.get('jwt');
 
-  // jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, { ignoreExpiration: true });
+  jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, { ignoreExpiration: true });
 
   ctx.body = await youtubeClient.getChannels(channelName as string, ctx.ip);
 });
@@ -238,55 +243,70 @@ router.get('/youtube/streams', async (ctx, next) => {
   const { channelId } = ctx.query;
   const jwt = ctx.get('jwt');
 
-  // jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, { ignoreExpiration: true });
+  jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, { ignoreExpiration: true });
 
   ctx.body = await youtubeClient.getStreams(channelId as string, ctx.ip);
 });
 
-router.get('/auth', async (ctx, next) => {
-  const jwt = jsonwebtoken.sign({ isLoggedIn: true }, SERVER.JWT_SECRET, {
-    noTimestamp: true,
-  });
+router.get('/auth/klpq', async (ctx, next) => {
+  const { requestId } = ctx.query;
 
-  ctx.body = {
-    jwt,
-  };
-});
+  if (!requestId) {
+    throw new Error('no_request_id');
+  }
 
-router.get('/klpq/auth', async (ctx, next) => {
-  const redirectUri = `${SERVER.CALLBACK_URL}/klpq/auth/callback?token=`;
+  ctx.cookies.set('requestId', requestId as string);
 
   ctx.session.token = jsonwebtoken.sign({}, SERVER.JWT_SECRET, {
     expiresIn: '1m',
   });
+
+  const redirectUri = `${SERVER.CALLBACK_URL}/auth/klpq/callback?token=`;
 
   ctx.redirect(
     `${API.AUTH_SERVICE_URL}?redirectUri=${encodeURIComponent(redirectUri)}`,
   );
 });
 
-router.get('/klpq/auth/callback', (ctx, next) => {
-  const { token: jwtToken } = ctx.query;
+router.get('/auth/klpq/callback', (ctx, next) => {
+  const { token: klpqJwtToken } = ctx.query;
   const { token: verifyToken } = ctx.session;
+
+  const { userId } = jsonwebtoken.decode(klpqJwtToken as string) as {
+    userId: string;
+  };
 
   jsonwebtoken.verify(verifyToken, SERVER.JWT_SECRET);
 
-  const jwt = jsonwebtoken.sign({ jwtToken }, SERVER.JWT_SECRET, {
-    noTimestamp: true,
-  });
+  const jwtToken = jsonwebtoken.sign(
+    { userId, jwtToken: klpqJwtToken },
+    SERVER.JWT_SECRET,
+    {
+      noTimestamp: true,
+    },
+  );
 
-  ctx.body = {
-    jwt,
-  };
+  const requestId = ctx.cookies.get('requestId');
+
+  publishKlpqUser(requestId, jwtToken);
+
+  ctx.body = 'sign_in_successful';
 });
 
 router.get('/sync/:id', async (ctx, next) => {
+  const jwt = ctx.get('jwt');
+
+  const { userId } = jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {
+    ignoreExpiration: true,
+  }) as { userId: string };
+
   const { id } = ctx.params;
 
   const { Sync } = MongoCollections;
 
   const syncRecord = await Sync.findOne({
     id,
+    userId,
   });
 
   if (!syncRecord) {
@@ -299,6 +319,12 @@ router.get('/sync/:id', async (ctx, next) => {
 });
 
 router.post('/sync', async (ctx, next) => {
+  const jwt = ctx.get('jwt');
+
+  const { userId } = jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {
+    ignoreExpiration: true,
+  }) as { userId: string };
+
   const { id, channels } = ctx.request.body;
 
   const { Sync } = MongoCollections;
@@ -309,6 +335,7 @@ router.post('/sync', async (ctx, next) => {
     await Sync.insertOne({
       id,
       channels,
+      userId,
       createdDate: new Date(),
       updateDate: new Date(),
       ipCreated: ctx.ip,
