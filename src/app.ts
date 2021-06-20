@@ -101,8 +101,14 @@ app.use(async (ctx, next) => {
   try {
     await next();
   } catch (error) {
-    console.error(ctx.method, ctx.href, JSON.stringify(ctx.headers), ctx.body);
-    console.error(error);
+    console.error(
+      'http_error',
+      ctx.method,
+      ctx.href,
+      JSON.stringify(ctx.headers),
+      ctx.body,
+      error,
+    );
 
     ctx.status = error.status || 500;
     ctx.body = { error: error.message };
@@ -368,5 +374,7 @@ router.post('/sync', async (ctx, next) => {
 app.use(router.routes());
 
 app.use((ctx) => {
-  ctx.throw(404);
+  console.log('http_not_found', ctx.method, ctx.href);
+
+  ctx.status = 404;
 });
