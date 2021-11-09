@@ -1,6 +1,6 @@
 import { MongoClient, Db, Collection } from 'mongodb';
 
-import { DB_HOST, DB_NAME } from '../config';
+import { DB_URI } from '../config';
 
 export interface IMigration {
   name: string;
@@ -29,11 +29,9 @@ export interface ISyncCollection {
 let mongoClientDb: Db;
 
 export async function connectMongoDriver(): Promise<MongoClient> {
-  const client = await MongoClient.connect(`mongodb://${DB_HOST}`, {
-    useUnifiedTopology: true,
-  });
+  const client = await MongoClient.connect(DB_URI);
 
-  mongoClientDb = client.db(DB_NAME);
+  mongoClientDb = client.db();
 
   return client;
 }

@@ -20,8 +20,7 @@ export const YOUTUBE = {
   API_KEY: 'api_key',
 };
 
-export const DB_HOST = 'localhost';
-export const DB_NAME = 'klpqclient';
+export const DB_URI = 'mongodb://USERNAME:PASSWORD@HOST/DATABASE';
 
 export const API = {
   AUTH_SERVICE_URL: 'http://localhost:9000',
