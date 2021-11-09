@@ -11,7 +11,7 @@ export const TWITCH = {
 };
 
 export const GOOGLE = {
-  CLIENT_UD: 'client_id',
+  CLIENT_ID: 'client_id',
   CLIENT_SECRET: 'client_secret',
   CALLBACK_URL: 'http://localhost:8000/auth/google/callback',
 };
