@@ -17,6 +17,9 @@ jobs:
       - script: |
           yarn install
         displayName: 'install'
+      - script: |
+          yarn build
+        displayName: 'build'
       - task: ArchiveFiles@2
         inputs:
           rootFolderOrFile: '$(Build.SourcesDirectory)'
