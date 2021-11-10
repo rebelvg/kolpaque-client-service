@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import { httpServer } from './app';
 import { io } from './socket-server';
 
-import { SERVER } from '../config';
+import { SERVER } from './config';
 import { connectMongoDriver } from './mongo';
 
 process.on('unhandledRejection', (reason, p) => {

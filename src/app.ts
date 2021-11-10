@@ -10,7 +10,7 @@ import * as _ from 'lodash';
 import * as bodyParser from 'koa-bodyparser';
 import * as koaSession from 'koa-session';
 
-import { SERVER, TWITCH, GOOGLE, API } from '../config';
+import { SERVER, TWITCH, GOOGLE, API } from './config';
 import {
   publishKlpqUser,
   publishTwitchUser,
@@ -256,6 +256,8 @@ router.get('/youtube/streams', async (ctx, next) => {
 
 router.get('/auth/klpq', async (ctx, next) => {
   const { requestId } = ctx.query;
+
+  console.log(ctx.host);
 
   if (!requestId) {
     throw new Error('no_request_id');

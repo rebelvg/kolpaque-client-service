@@ -1,6 +1,6 @@
 import * as SocketClient from 'socket.io-client';
 
-import { SERVER } from '../config';
+import { SERVER } from '../src/config';
 
 const io = SocketClient(`http://localhost:${SERVER.PORT}`);
 
