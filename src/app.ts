@@ -255,8 +255,6 @@ router.get('/youtube/streams', async (ctx, next) => {
 router.get('/auth/klpq', async (ctx, next) => {
   const { requestId } = ctx.query;
 
-  console.log(ctx.host);
-
   if (!requestId) {
     throw new Error('no_request_id');
   }
