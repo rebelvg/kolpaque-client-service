@@ -44,8 +44,6 @@ declare module 'koa-router' {
 
 export const app = new Koa();
 
-app.proxy = true;
-
 app.use(bodyParser({ enableTypes: ['json'] }));
 
 export const httpServer = http.createServer(app.callback());
