@@ -106,7 +106,7 @@ app.use(async (ctx, next) => {
       ctx.method,
       ctx.href,
       JSON.stringify(ctx.headers),
-      ctx.body,
+      ctx.request.body,
       error.message,
     );
 
