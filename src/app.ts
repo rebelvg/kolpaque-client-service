@@ -164,10 +164,10 @@ router.get('/auth/twitch/refresh', async (ctx, next) => {
   params.append('grant_type', 'refresh_token');
   params.append('refresh_token', refreshToken as string);
 
-  const { data } = await axios.post(
-    'https://id.twitch.tv/oauth2/token',
-    params,
-  );
+  const { data } = await axios.post<{
+    access_token: string;
+    refresh_token: string;
+  }>('https://id.twitch.tv/oauth2/token', params);
 
   ctx.body = {
     accessToken: data.access_token,
