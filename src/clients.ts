@@ -45,12 +45,14 @@ class YoutubeClient {
         params: channelName,
       },
       {
-        data,
-        ip,
-        createdDate: new Date(),
-        expireDate: new Date(
-          new Date().getTime() + 7 * 24 * 60 * MINUTE_IN_MILLISECONDS,
-        ),
+        $set: {
+          data,
+          ip,
+          createdDate: new Date(),
+          expireDate: new Date(
+            new Date().getTime() + 7 * 24 * 60 * MINUTE_IN_MILLISECONDS,
+          ),
+        },
       },
       {
         upsert: true,
@@ -91,12 +93,14 @@ class YoutubeClient {
         params: channelId,
       },
       {
-        data,
-        ip,
-        createdDate: new Date(),
-        expireDate: new Date(
-          new Date().getTime() + 60 * MINUTE_IN_MILLISECONDS,
-        ),
+        $set: {
+          data,
+          ip,
+          createdDate: new Date(),
+          expireDate: new Date(
+            new Date().getTime() + 60 * MINUTE_IN_MILLISECONDS,
+          ),
+        },
       },
       {
         upsert: true,
