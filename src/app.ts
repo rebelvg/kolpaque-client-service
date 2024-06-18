@@ -59,7 +59,6 @@ passport.use(
       clientID: TWITCH.CLIENT_ID,
       clientSecret: TWITCH.CLIENT_SECRET,
       callbackURL: TWITCH.CALLBACK_URL,
-      scope: ['user:read:follows'],
     },
     function (accessToken, refreshToken, profile, done) {
       const user: IUser = {
@@ -135,7 +134,10 @@ router.get(
 
     await next();
   },
-  passport.authenticate('twitch', { session: false, scope: 'user_read' }),
+  passport.authenticate('twitch', {
+    session: false,
+    scope: ['user_read', 'user:read:follows'],
+  }),
 );
 
 router.get(
