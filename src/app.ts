@@ -59,6 +59,7 @@ passport.use(
       clientID: TWITCH.CLIENT_ID,
       clientSecret: TWITCH.CLIENT_SECRET,
       callbackURL: TWITCH.CALLBACK_URL,
+      scope: ['user:read:follows'],
     },
     function (accessToken, refreshToken, profile, done) {
       const user: IUser = {
