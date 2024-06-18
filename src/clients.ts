@@ -39,16 +39,23 @@ class YoutubeClient {
 
     const { data } = await axios.get<IYoutubeChannels>(url.href);
 
-    await Youtube.insertOne({
-      endpoint: 'channels',
-      params: channelName,
-      data,
-      ip,
-      createdDate: new Date(),
-      expireDate: new Date(
-        new Date().getTime() + 7 * 24 * 60 * MINUTE_IN_MILLISECONDS,
-      ),
-    });
+    await Youtube.updateOne(
+      {
+        endpoint: 'channels',
+        params: channelName,
+      },
+      {
+        data,
+        ip,
+        createdDate: new Date(),
+        expireDate: new Date(
+          new Date().getTime() + 7 * 24 * 60 * MINUTE_IN_MILLISECONDS,
+        ),
+      },
+      {
+        upsert: true,
+      },
+    );
 
     return data;
   }
@@ -78,14 +85,23 @@ class YoutubeClient {
 
     const { data } = await axios.get<IYoutubeStreams>(url.href);
 
-    await Youtube.insertOne({
-      endpoint: 'search',
-      params: channelId,
-      data,
-      ip,
-      createdDate: new Date(),
-      expireDate: new Date(new Date().getTime() + 60 * MINUTE_IN_MILLISECONDS),
-    });
+    await Youtube.updateOne(
+      {
+        endpoint: 'search',
+        params: channelId,
+      },
+      {
+        data,
+        ip,
+        createdDate: new Date(),
+        expireDate: new Date(
+          new Date().getTime() + 60 * MINUTE_IN_MILLISECONDS,
+        ),
+      },
+      {
+        upsert: true,
+      },
+    );
 
     return data;
   }
