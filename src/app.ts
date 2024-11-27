@@ -321,9 +321,11 @@ router.get('/auth/klpq/callback', async (ctx, next) => {
 router.get('/sync/:id', async (ctx, next) => {
   const jwt = ctx.get('jwt');
 
-  const { userId } = jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {}) as {
-    userId: string;
+  const { klpqJwtToken } = jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {}) as {
+    klpqJwtToken: string;
   };
+
+  const { userId } = jsonwebtoken.decode(klpqJwtToken) as { userId: string };
 
   const { id } = ctx.params;
 
@@ -346,9 +348,11 @@ router.get('/sync/:id', async (ctx, next) => {
 router.post('/sync', async (ctx, next) => {
   const jwt = ctx.get('jwt');
 
-  const { userId } = jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {}) as {
-    userId: string;
+  const { klpqJwtToken } = jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {}) as {
+    klpqJwtToken: string;
   };
+
+  const { userId } = jsonwebtoken.decode(klpqJwtToken) as { userId: string };
 
   const { id, channels } = ctx.request.body;
 
