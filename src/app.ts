@@ -108,6 +108,7 @@ app.use(async (ctx, next) => {
       JSON.stringify(ctx.headers),
       ctx.request.body,
       error.message,
+      error.stack,
     );
 
     ctx.status = error.status || 500;
