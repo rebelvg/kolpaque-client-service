@@ -10,7 +10,7 @@ export interface IMigration {
 export interface IYoutubeCollection {
   endpoint: string;
   params: string;
-  data: any;
+  data: any | null;
   ip: string;
   createdDate: Date;
   expireDate: Date;

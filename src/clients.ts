@@ -29,26 +29,38 @@ class YoutubeClient {
       params: channelName,
     });
 
-    if (cacheData) {
-      return cacheData.data;
+    let data: any | null = cacheData?.data || null;
+    let expireDate = cacheData?.expireDate || new Date();
+
+    if (!cacheData || cacheData.expireDate.getTime() > Date.now()) {
+      const url = new URL(`${this.baseUrl}/channels`);
+
+      if (forHandle) {
+        url.searchParams.set('forHandle', channelName);
+      } else {
+        url.searchParams.set('forUsername', channelName);
+      }
+
+      url.searchParams.set('part', 'id');
+
+      try {
+        const { data: newData } = await axios.get<IYoutubeChannels>(url.href, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        data = newData;
+
+        expireDate = new Date(
+          new Date().getTime() + 14 * 24 * 60 * MINUTE_IN_MILLISECONDS,
+        );
+      } catch (error) {
+        expireDate = new Date(
+          new Date().getTime() + 15 * MINUTE_IN_MILLISECONDS,
+        );
+      }
     }
-
-    const url = new URL(`${this.baseUrl}/channels`);
-
-    if (forHandle) {
-      url.searchParams.set('forHandle', channelName);
-    } else {
-      url.searchParams.set('forUsername', channelName);
-    }
-
-    url.searchParams.set('part', 'id');
-    url.searchParams.set('key', YOUTUBE.API_KEY);
-
-    const { data } = await axios.get<IYoutubeChannels>(url.href, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
 
     await Youtube.updateOne(
       {
@@ -60,9 +72,7 @@ class YoutubeClient {
           data,
           ip,
           createdDate: new Date(),
-          expireDate: new Date(
-            new Date().getTime() + 7 * 24 * 60 * MINUTE_IN_MILLISECONDS,
-          ),
+          expireDate,
         },
       },
       {
@@ -85,49 +95,55 @@ class YoutubeClient {
       params: channelId,
     });
 
-    if (cacheData) {
-      return cacheData.data;
-    }
+    let data: any | null = cacheData?.data || null;
+    let expireDate = cacheData?.expireDate || new Date();
 
-    const url = new URL(`${this.baseUrl}/search`);
+    if (!cacheData || cacheData.expireDate.getTime() > Date.now()) {
+      const url = new URL(`${this.baseUrl}/search`);
 
-    url.searchParams.set('channelId', channelId);
-    url.searchParams.set('part', 'snippet');
-    url.searchParams.set('type', 'video');
-    url.searchParams.set('eventType', 'live');
-    url.searchParams.set('key', YOUTUBE.API_KEY);
+      url.searchParams.set('channelId', channelId);
+      url.searchParams.set('part', 'snippet');
+      url.searchParams.set('type', 'video');
+      url.searchParams.set('eventType', 'live');
 
-    try {
-      const { data } = await axios.get<IYoutubeStreams>(url.href, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      await Youtube.updateOne(
-        {
-          endpoint: 'search',
-          params: channelId,
-        },
-        {
-          $set: {
-            data,
-            ip,
-            createdDate: new Date(),
-            expireDate: new Date(
-              new Date().getTime() + 15 * MINUTE_IN_MILLISECONDS,
-            ),
+      try {
+        const { data: newData } = await axios.get<IYoutubeStreams>(url.href, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
           },
-        },
-        {
-          upsert: true,
-        },
-      );
+        });
 
-      return data;
-    } catch (error) {
-      return null;
+        data = newData;
+
+        expireDate = new Date(
+          new Date().getTime() + 15 * MINUTE_IN_MILLISECONDS,
+        );
+      } catch (error) {
+        expireDate = new Date(
+          new Date().getTime() + 15 * MINUTE_IN_MILLISECONDS,
+        );
+      }
     }
+
+    await Youtube.updateOne(
+      {
+        endpoint: 'search',
+        params: channelId,
+      },
+      {
+        $set: {
+          data,
+          ip,
+          createdDate: new Date(),
+          expireDate,
+        },
+      },
+      {
+        upsert: true,
+      },
+    );
+
+    return data;
   }
 }
 
