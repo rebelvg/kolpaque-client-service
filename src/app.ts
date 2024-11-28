@@ -248,10 +248,6 @@ router.get(
 );
 
 router.get('/auth/google/refresh', async (ctx, next) => {
-  ctx.body = null;
-
-  return;
-
   const { refreshToken } = ctx.query;
 
   if (!refreshToken) {
@@ -265,10 +261,9 @@ router.get('/auth/google/refresh', async (ctx, next) => {
   params.append('grant_type', 'refresh_token');
   params.append('refresh_token', refreshToken as string);
 
-  const { data } = await axios.post(
-    'https://www.googleapis.com/oauth2/v4/token',
-    params,
-  );
+  const { data } = await axios.post<{
+    access_token: string;
+  }>('https://www.googleapis.com/oauth2/v4/token', params);
 
   ctx.body = {
     accessToken: data.access_token,
@@ -277,35 +272,31 @@ router.get('/auth/google/refresh', async (ctx, next) => {
 });
 
 router.get('/youtube/channels', async (ctx, next) => {
-  const { channelName } = ctx.query;
-  const jwt = ctx.get('jwt');
+  const { channelName, accessToken } = ctx.query;
 
-  const { _v } = jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {}) as {
-    _v: string;
-    klpqJwtToken: string;
-  };
-
-  if (_v !== 'v1') {
-    throw new Error('bad_token');
+  if (!accessToken) {
+    return;
   }
 
-  ctx.body = await youtubeClient.getChannels(channelName as string, ctx.ip);
+  ctx.body = await youtubeClient.getChannels(
+    channelName as string,
+    ctx.ip,
+    accessToken as string,
+  );
 });
 
 router.get('/youtube/streams', async (ctx, next) => {
-  const { channelId } = ctx.query;
-  const jwt = ctx.get('jwt');
+  const { channelId, accessToken } = ctx.query;
 
-  const { _v } = jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {}) as {
-    _v: string;
-    klpqJwtToken: string;
-  };
-
-  if (_v !== 'v1') {
-    throw new Error('bad_token');
+  if (!accessToken) {
+    return;
   }
 
-  ctx.body = await youtubeClient.getStreams(channelId as string, ctx.ip);
+  ctx.body = await youtubeClient.getStreams(
+    channelId as string,
+    ctx.ip,
+    accessToken as string,
+  );
 });
 
 router.get('/auth/klpq', async (ctx, next) => {

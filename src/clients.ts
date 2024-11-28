@@ -19,6 +19,7 @@ class YoutubeClient {
   public async getChannels(
     channelName: string,
     ip: string,
+    accessToken: string,
   ): Promise<IYoutubeChannels> {
     const { Youtube } = MongoCollections;
 
@@ -31,15 +32,17 @@ class YoutubeClient {
       return cacheData.data;
     }
 
-    return;
-
     const url = new URL(`${this.baseUrl}/channels`);
 
     url.searchParams.set('forUsername', channelName);
     url.searchParams.set('part', 'id');
     url.searchParams.set('key', YOUTUBE.API_KEY);
 
-    const { data } = await axios.get<IYoutubeChannels>(url.href);
+    const { data } = await axios.get<IYoutubeChannels>(url.href, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     await Youtube.updateOne(
       {
@@ -67,6 +70,7 @@ class YoutubeClient {
   public async getStreams(
     channelId: string,
     ip: string,
+    accessToken: string,
   ): Promise<IYoutubeStreams> {
     const { Youtube } = MongoCollections;
 
@@ -79,8 +83,6 @@ class YoutubeClient {
       return cacheData.data;
     }
 
-    return;
-
     const url = new URL(`${this.baseUrl}/search`);
 
     url.searchParams.set('channelId', channelId);
@@ -90,7 +92,11 @@ class YoutubeClient {
     url.searchParams.set('key', YOUTUBE.API_KEY);
 
     try {
-      const { data } = await axios.get<IYoutubeStreams>(url.href);
+      const { data } = await axios.get<IYoutubeStreams>(url.href, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
       await Youtube.updateOne(
         {
@@ -103,7 +109,7 @@ class YoutubeClient {
             ip,
             createdDate: new Date(),
             expireDate: new Date(
-              new Date().getTime() + 60 * MINUTE_IN_MILLISECONDS,
+              new Date().getTime() + 15 * MINUTE_IN_MILLISECONDS,
             ),
           },
         },
