@@ -20,6 +20,7 @@ class YoutubeClient {
     channelName: string,
     ip: string,
     accessToken: string,
+    forHandle: boolean,
   ): Promise<IYoutubeChannels> {
     const { Youtube } = MongoCollections;
 
@@ -34,7 +35,12 @@ class YoutubeClient {
 
     const url = new URL(`${this.baseUrl}/channels`);
 
-    url.searchParams.set('forUsername', channelName);
+    if (forHandle) {
+      url.searchParams.set('forHandle', channelName);
+    } else {
+      url.searchParams.set('forUsername', channelName);
+    }
+
     url.searchParams.set('part', 'id');
     url.searchParams.set('key', YOUTUBE.API_KEY);
 

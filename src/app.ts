@@ -272,7 +272,7 @@ router.get('/auth/google/refresh', async (ctx, next) => {
 });
 
 router.get('/youtube/channels', async (ctx, next) => {
-  const { channelName, accessToken } = ctx.query;
+  const { channelName, accessToken, forHandle } = ctx.query;
 
   if (!accessToken) {
     return;
@@ -282,6 +282,7 @@ router.get('/youtube/channels', async (ctx, next) => {
     channelName as string,
     ctx.ip,
     accessToken as string,
+    !!forHandle,
   );
 });
 
