@@ -31,6 +31,8 @@ class YoutubeClient {
       return cacheData.data;
     }
 
+    return;
+
     const url = new URL(`${this.baseUrl}/channels`);
 
     url.searchParams.set('forUsername', channelName);
@@ -77,6 +79,8 @@ class YoutubeClient {
       return cacheData.data;
     }
 
+    return;
+
     const url = new URL(`${this.baseUrl}/search`);
 
     url.searchParams.set('channelId', channelId);
@@ -85,29 +89,33 @@ class YoutubeClient {
     url.searchParams.set('eventType', 'live');
     url.searchParams.set('key', YOUTUBE.API_KEY);
 
-    const { data } = await axios.get<IYoutubeStreams>(url.href);
+    try {
+      const { data } = await axios.get<IYoutubeStreams>(url.href);
 
-    await Youtube.updateOne(
-      {
-        endpoint: 'search',
-        params: channelId,
-      },
-      {
-        $set: {
-          data,
-          ip,
-          createdDate: new Date(),
-          expireDate: new Date(
-            new Date().getTime() + 60 * MINUTE_IN_MILLISECONDS,
-          ),
+      await Youtube.updateOne(
+        {
+          endpoint: 'search',
+          params: channelId,
         },
-      },
-      {
-        upsert: true,
-      },
-    );
+        {
+          $set: {
+            data,
+            ip,
+            createdDate: new Date(),
+            expireDate: new Date(
+              new Date().getTime() + 60 * MINUTE_IN_MILLISECONDS,
+            ),
+          },
+        },
+        {
+          upsert: true,
+        },
+      );
 
-    return data;
+      return data;
+    } catch (error) {
+      return null;
+    }
   }
 }
 
