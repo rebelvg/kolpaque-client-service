@@ -182,20 +182,30 @@ router.get('/auth/twitch/refresh', async (ctx, next) => {
 router.get('/auth/klpq/refresh', async (ctx, next) => {
   const jwt = ctx.get('jwt');
 
-  const data = jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {}) as {
+  const { _v, klpqJwtToken } = jsonwebtoken.verify(
+    jwt,
+    SERVER.JWT_SECRET,
+    {},
+  ) as {
+    _v: string;
     klpqJwtToken: string;
   };
 
+  if (_v !== 'v1') {
+    throw new Error('bad_token');
+  }
+
   const {
-    data: { jwtToken: klpqJwtToken },
+    data: { jwtToken: newKlpqJwtToken },
   } = await axios.get(`${new URL(API.AUTH_SERVICE_URL).origin}/users/refresh`, {
-    headers: { 'jwt-token': data.klpqJwtToken },
+    headers: { 'jwt-token': klpqJwtToken },
   });
 
   ctx.body = {
     jwt: jsonwebtoken.sign(
       {
-        klpqJwtToken,
+        _v: 'v1',
+        klpqJwtToken: newKlpqJwtToken,
       },
       SERVER.JWT_SECRET,
       {
@@ -270,7 +280,14 @@ router.get('/youtube/channels', async (ctx, next) => {
   const { channelName } = ctx.query;
   const jwt = ctx.get('jwt');
 
-  jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {});
+  const { _v } = jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {}) as {
+    _v: string;
+    klpqJwtToken: string;
+  };
+
+  if (_v !== 'v1') {
+    throw new Error('bad_token');
+  }
 
   ctx.body = await youtubeClient.getChannels(channelName as string, ctx.ip);
 });
@@ -279,7 +296,14 @@ router.get('/youtube/streams', async (ctx, next) => {
   const { channelId } = ctx.query;
   const jwt = ctx.get('jwt');
 
-  jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {});
+  const { _v } = jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {}) as {
+    _v: string;
+    klpqJwtToken: string;
+  };
+
+  if (_v !== 'v1') {
+    throw new Error('bad_token');
+  }
 
   ctx.body = await youtubeClient.getStreams(channelId as string, ctx.ip);
 });
@@ -307,9 +331,13 @@ router.get('/auth/klpq/callback', async (ctx, next) => {
     headers: { 'jwt-token': klpqJwtToken },
   });
 
-  const jwtToken = jsonwebtoken.sign({ klpqJwtToken }, SERVER.JWT_SECRET, {
-    expiresIn: '120d',
-  });
+  const jwtToken = jsonwebtoken.sign(
+    { _v: 'v1', klpqJwtToken },
+    SERVER.JWT_SECRET,
+    {
+      expiresIn: '120d',
+    },
+  );
 
   const requestId = ctx.session.requestId;
 
@@ -321,11 +349,22 @@ router.get('/auth/klpq/callback', async (ctx, next) => {
 router.get('/sync/:id', async (ctx, next) => {
   const jwt = ctx.get('jwt');
 
-  const { klpqJwtToken } = jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {}) as {
+  const { _v, klpqJwtToken } = jsonwebtoken.verify(
+    jwt,
+    SERVER.JWT_SECRET,
+    {},
+  ) as {
+    _v: string;
     klpqJwtToken: string;
   };
 
-  const { userId } = jsonwebtoken.decode(klpqJwtToken) as { userId: string };
+  if (_v !== 'v1') {
+    throw new Error('bad_token');
+  }
+
+  const { userId } = jsonwebtoken.decode(klpqJwtToken) as {
+    userId: string;
+  };
 
   const { id } = ctx.params;
 
@@ -348,11 +387,22 @@ router.get('/sync/:id', async (ctx, next) => {
 router.post('/sync', async (ctx, next) => {
   const jwt = ctx.get('jwt');
 
-  const { klpqJwtToken } = jsonwebtoken.verify(jwt, SERVER.JWT_SECRET, {}) as {
+  const { _v, klpqJwtToken } = jsonwebtoken.verify(
+    jwt,
+    SERVER.JWT_SECRET,
+    {},
+  ) as {
+    _v: string;
     klpqJwtToken: string;
   };
 
-  const { userId } = jsonwebtoken.decode(klpqJwtToken) as { userId: string };
+  if (_v !== 'v1') {
+    throw new Error('bad_token');
+  }
+
+  const { userId } = jsonwebtoken.decode(klpqJwtToken) as {
+    userId: string;
+  };
 
   const { id, channels } = ctx.request.body;
 
