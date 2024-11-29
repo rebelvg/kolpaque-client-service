@@ -96,23 +96,24 @@ passport.use(
 app.proxy = true;
 
 app.use(async (ctx, next) => {
-  console.log(ctx.url, ctx.method);
+  console.log(ctx.method, ctx.href);
 
   try {
     await next();
+
+    console.log(ctx.method, ctx.href, ctx.status);
   } catch (error) {
+    ctx.status = error.status || 500;
+    ctx.body = { error: error.message };
+
+    console.error(ctx.method, ctx.href, ctx.status);
     console.error(
       'http_error',
-      ctx.method,
-      ctx.href,
       JSON.stringify(ctx.headers),
       ctx.request.body,
       error.message,
       error.stack,
     );
-
-    ctx.status = error.status || 500;
-    ctx.body = { error: error.message };
   }
 });
 

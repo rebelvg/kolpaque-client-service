@@ -32,6 +32,8 @@ class YoutubeClient {
     let data: any | null = cacheData?.data || null;
     let expireDate = cacheData?.expireDate || new Date();
 
+    let throwError = false;
+
     if (!cacheData || Date.now() > cacheData.expireDate.getTime()) {
       const url = new URL(`${this.baseUrl}/channels`);
 
@@ -56,11 +58,13 @@ class YoutubeClient {
           new Date().getTime() + 14 * 24 * 60 * MINUTE_IN_MILLISECONDS,
         );
       } catch (error) {
-        console.error(error, (error as AxiosError)?.response?.data);
+        console.error(error.message, (error as AxiosError)?.response?.data);
 
         expireDate = new Date(
           new Date().getTime() + 15 * MINUTE_IN_MILLISECONDS,
         );
+
+        throwError = true;
       }
     }
 
@@ -84,6 +88,10 @@ class YoutubeClient {
       },
     );
 
+    if (throwError) {
+      throw new Error('youtube_error');
+    }
+
     return data;
   }
 
@@ -101,6 +109,8 @@ class YoutubeClient {
 
     let data: any | null = cacheData?.data || null;
     let expireDate = cacheData?.expireDate || new Date();
+
+    let throwError = false;
 
     if (!cacheData || Date.now() > cacheData.expireDate.getTime()) {
       const url = new URL(`${this.baseUrl}/search`);
@@ -123,11 +133,13 @@ class YoutubeClient {
           new Date().getTime() + 15 * MINUTE_IN_MILLISECONDS,
         );
       } catch (error) {
-        console.error(error, (error as AxiosError)?.response?.data);
+        console.error(error.message, (error as AxiosError)?.response?.data);
 
         expireDate = new Date(
           new Date().getTime() + 15 * MINUTE_IN_MILLISECONDS,
         );
+
+        throwError = true;
       }
     }
 
@@ -150,6 +162,10 @@ class YoutubeClient {
         upsert: true,
       },
     );
+
+    if (throwError) {
+      throw new Error('youtube_error');
+    }
 
     return data;
   }
