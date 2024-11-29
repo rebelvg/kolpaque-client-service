@@ -32,7 +32,7 @@ class YoutubeClient {
     let data: any | null = cacheData?.data || null;
     let expireDate = cacheData?.expireDate || new Date();
 
-    if (!cacheData || cacheData.expireDate.getTime() > Date.now()) {
+    if (!cacheData || Date.now() > cacheData.expireDate.getTime()) {
       const url = new URL(`${this.baseUrl}/channels`);
 
       if (forHandle) {
@@ -102,7 +102,7 @@ class YoutubeClient {
     let data: any | null = cacheData?.data || null;
     let expireDate = cacheData?.expireDate || new Date();
 
-    if (!cacheData || cacheData.expireDate.getTime() > Date.now()) {
+    if (!cacheData || Date.now() > cacheData.expireDate.getTime()) {
       const url = new URL(`${this.baseUrl}/search`);
 
       url.searchParams.set('channelId', channelId);
