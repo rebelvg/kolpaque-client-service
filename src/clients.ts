@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 import { YOUTUBE } from './config';
 import { MongoCollections } from './mongo';
@@ -56,6 +56,8 @@ class YoutubeClient {
           new Date().getTime() + 14 * 24 * 60 * MINUTE_IN_MILLISECONDS,
         );
       } catch (error) {
+        console.error(error, (error as AxiosError)?.response?.data);
+
         expireDate = new Date(
           new Date().getTime() + 15 * MINUTE_IN_MILLISECONDS,
         );
@@ -121,6 +123,8 @@ class YoutubeClient {
           new Date().getTime() + 15 * MINUTE_IN_MILLISECONDS,
         );
       } catch (error) {
+        console.error(error, (error as AxiosError)?.response?.data);
+
         expireDate = new Date(
           new Date().getTime() + 15 * MINUTE_IN_MILLISECONDS,
         );
