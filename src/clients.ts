@@ -71,8 +71,10 @@ class YoutubeClient {
         $set: {
           data,
           ip,
-          createdDate: new Date(),
           expireDate,
+        },
+        $setOnInsert: {
+          createdDate: new Date(),
         },
       },
       {
@@ -134,8 +136,10 @@ class YoutubeClient {
         $set: {
           data,
           ip,
-          createdDate: new Date(),
           expireDate,
+        },
+        $setOnInsert: {
+          createdDate: new Date(),
         },
       },
       {
