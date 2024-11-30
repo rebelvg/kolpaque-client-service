@@ -96,7 +96,7 @@ passport.use(
 app.proxy = true;
 
 app.use(async (ctx, next) => {
-  console.log(ctx.method, ctx.href);
+  console.log(ctx.method, ctx.href, JSON.stringify(ctx.headers));
 
   try {
     await next();
@@ -107,13 +107,7 @@ app.use(async (ctx, next) => {
     ctx.body = { error: error.message };
 
     console.error(ctx.method, ctx.href, ctx.status);
-    console.error(
-      'http_error',
-      JSON.stringify(ctx.headers),
-      ctx.request.body,
-      error.message,
-      error.stack,
-    );
+    console.error('http_error', error.message, JSON.stringify(error.stack));
   }
 });
 
@@ -273,32 +267,71 @@ router.get('/auth/google/refresh', async (ctx, next) => {
 });
 
 router.get('/youtube/channels', async (ctx, next) => {
-  const { channelName, accessToken, forHandle } = ctx.query;
+  const { channelName, forHandle } = ctx.query;
 
-  if (!accessToken) {
+  if (!channelName) {
+    return;
+  }
+
+  const jwt = ctx.get('jwt');
+
+  try {
+    const { _v, klpqJwtToken } = jsonwebtoken.verify(
+      jwt,
+      SERVER.JWT_SECRET,
+      {},
+    ) as {
+      _v: string;
+      klpqJwtToken: string;
+    };
+
+    if (_v !== 'v1') {
+      throw new Error('bad_token');
+    }
+  } catch (error) {
+    console.error(error.message, jwt);
+
     return;
   }
 
   ctx.body = await youtubeClient.getChannels(
     channelName as string,
     ctx.ip,
-    accessToken as string,
     !!forHandle,
   );
 });
 
 router.get('/youtube/streams', async (ctx, next) => {
-  const { channelId, accessToken } = ctx.query;
+  return;
 
-  if (!accessToken) {
+  const { channelId } = ctx.query;
+
+  if (!channelId) {
     return;
   }
 
-  ctx.body = await youtubeClient.getStreams(
-    channelId as string,
-    ctx.ip,
-    accessToken as string,
-  );
+  const jwt = ctx.get('jwt');
+
+  try {
+    const { _v, klpqJwtToken } = jsonwebtoken.verify(
+      jwt,
+      SERVER.JWT_SECRET,
+      {},
+    ) as {
+      _v: string;
+      klpqJwtToken: string;
+    };
+
+    if (_v !== 'v1') {
+      throw new Error('bad_token');
+    }
+  } catch (error) {
+    console.error(error, jwt);
+
+    return;
+  }
+
+  ctx.body = await youtubeClient.getStreams(channelId as string, ctx.ip);
 });
 
 router.get('/auth/klpq', async (ctx, next) => {
@@ -342,22 +375,36 @@ router.get('/auth/klpq/callback', async (ctx, next) => {
 router.get('/sync/:id', async (ctx, next) => {
   const jwt = ctx.get('jwt');
 
-  const { _v, klpqJwtToken } = jsonwebtoken.verify(
-    jwt,
-    SERVER.JWT_SECRET,
-    {},
-  ) as {
-    _v: string;
-    klpqJwtToken: string;
-  };
+  let userId: string;
 
-  if (_v !== 'v1') {
-    throw new Error('bad_token');
+  try {
+    const { _v, klpqJwtToken } = jsonwebtoken.verify(
+      jwt,
+      SERVER.JWT_SECRET,
+      {},
+    ) as {
+      _v: string;
+      klpqJwtToken: string;
+    };
+
+    if (_v !== 'v1') {
+      throw new Error('bad_token');
+    }
+
+    const klpqJwt = jsonwebtoken.decode(klpqJwtToken) as {
+      userId: string;
+    };
+
+    if (!userId) {
+      throw new Error('bad_klpq_token');
+    }
+
+    userId = klpqJwt.userId;
+  } catch (error) {
+    console.error(error.message, jwt);
+
+    return;
   }
-
-  const { userId } = jsonwebtoken.decode(klpqJwtToken) as {
-    userId: string;
-  };
 
   const { id } = ctx.params;
 
@@ -380,22 +427,36 @@ router.get('/sync/:id', async (ctx, next) => {
 router.post('/sync', async (ctx, next) => {
   const jwt = ctx.get('jwt');
 
-  const { _v, klpqJwtToken } = jsonwebtoken.verify(
-    jwt,
-    SERVER.JWT_SECRET,
-    {},
-  ) as {
-    _v: string;
-    klpqJwtToken: string;
-  };
+  let userId: string;
 
-  if (_v !== 'v1') {
-    throw new Error('bad_token');
+  try {
+    const { _v, klpqJwtToken } = jsonwebtoken.verify(
+      jwt,
+      SERVER.JWT_SECRET,
+      {},
+    ) as {
+      _v: string;
+      klpqJwtToken: string;
+    };
+
+    if (_v !== 'v1') {
+      throw new Error('bad_token');
+    }
+
+    const klpqJwt = jsonwebtoken.decode(klpqJwtToken) as {
+      userId: string;
+    };
+
+    if (!userId) {
+      throw new Error('bad_klpq_token');
+    }
+
+    userId = klpqJwt.userId;
+  } catch (error) {
+    console.error(error.message, jwt);
+
+    return;
   }
-
-  const { userId } = jsonwebtoken.decode(klpqJwtToken) as {
-    userId: string;
-  };
 
   const { id, channels } = ctx.request.body;
 

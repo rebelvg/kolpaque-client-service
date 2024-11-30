@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 
-import { YOUTUBE } from './config';
+import { GOOGLE, YOUTUBE } from './config';
 import { MongoCollections } from './mongo';
 
 const MINUTE_IN_MILLISECONDS = 60 * 1000;
@@ -19,7 +19,6 @@ class YoutubeClient {
   public async getChannels(
     channelName: string,
     ip: string,
-    accessToken: string,
     forHandle: boolean,
   ): Promise<IYoutubeChannels> {
     const { Youtube } = MongoCollections;
@@ -32,8 +31,6 @@ class YoutubeClient {
     let data: any | null = cacheData?.data || null;
     let expireDate = cacheData?.expireDate || new Date();
 
-    let throwError = false;
-
     if (!cacheData || Date.now() > cacheData.expireDate.getTime()) {
       const url = new URL(`${this.baseUrl}/channels`);
 
@@ -44,18 +41,19 @@ class YoutubeClient {
       }
 
       url.searchParams.set('part', 'id');
+      url.searchParams.set('key', YOUTUBE.API_KEY);
 
       try {
         const { data: newData } = await axios.get<IYoutubeChannels>(url.href, {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            // Authorization: `Bearer ${accessToken}`,
           },
         });
 
         data = newData;
 
         expireDate = new Date(
-          new Date().getTime() + 14 * 24 * 60 * MINUTE_IN_MILLISECONDS,
+          new Date().getTime() + 24 * 60 * MINUTE_IN_MILLISECONDS,
         );
       } catch (error) {
         console.error(error.message, (error as AxiosError)?.response?.data);
@@ -63,8 +61,6 @@ class YoutubeClient {
         expireDate = new Date(
           new Date().getTime() + 15 * MINUTE_IN_MILLISECONDS,
         );
-
-        throwError = true;
       }
     }
 
@@ -88,17 +84,12 @@ class YoutubeClient {
       },
     );
 
-    if (throwError) {
-      throw new Error('youtube_error');
-    }
-
     return data;
   }
 
   public async getStreams(
     channelId: string,
     ip: string,
-    accessToken: string,
   ): Promise<IYoutubeStreams> {
     const { Youtube } = MongoCollections;
 
@@ -110,8 +101,6 @@ class YoutubeClient {
     let data: any | null = cacheData?.data || null;
     let expireDate = cacheData?.expireDate || new Date();
 
-    let throwError = false;
-
     if (!cacheData || Date.now() > cacheData.expireDate.getTime()) {
       const url = new URL(`${this.baseUrl}/search`);
 
@@ -119,11 +108,12 @@ class YoutubeClient {
       url.searchParams.set('part', 'snippet');
       url.searchParams.set('type', 'video');
       url.searchParams.set('eventType', 'live');
+      url.searchParams.set('key', YOUTUBE.API_KEY);
 
       try {
         const { data: newData } = await axios.get<IYoutubeStreams>(url.href, {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            // Authorization: `Bearer ${accessToken}`,
           },
         });
 
@@ -138,8 +128,6 @@ class YoutubeClient {
         expireDate = new Date(
           new Date().getTime() + 15 * MINUTE_IN_MILLISECONDS,
         );
-
-        throwError = true;
       }
     }
 
@@ -162,10 +150,6 @@ class YoutubeClient {
         upsert: true,
       },
     );
-
-    if (throwError) {
-      throw new Error('youtube_error');
-    }
 
     return data;
   }
