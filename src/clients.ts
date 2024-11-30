@@ -59,7 +59,7 @@ class YoutubeClient {
         console.error(error.message, (error as AxiosError)?.response?.data);
 
         expireDate = new Date(
-          new Date().getTime() + 15 * MINUTE_IN_MILLISECONDS,
+          new Date().getTime() + 60 * MINUTE_IN_MILLISECONDS,
         );
       }
     }

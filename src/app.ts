@@ -190,6 +190,14 @@ router.get('/auth/klpq/refresh', async (ctx, next) => {
     throw new Error('bad_token');
   }
 
+  const klpqJwt = jsonwebtoken.decode(klpqJwtToken) as {
+    userId: string;
+  };
+
+  if (!klpqJwt.userId) {
+    throw new Error('bad_klpq_token');
+  }
+
   const {
     data: { jwtToken: newKlpqJwtToken },
   } = await axios.get(`${new URL(API.AUTH_SERVICE_URL).origin}/users/refresh`, {
@@ -395,7 +403,7 @@ router.get('/sync/:id', async (ctx, next) => {
       userId: string;
     };
 
-    if (!userId) {
+    if (!klpqJwt.userId) {
       throw new Error('bad_klpq_token');
     }
 
@@ -447,7 +455,7 @@ router.post('/sync', async (ctx, next) => {
       userId: string;
     };
 
-    if (!userId) {
+    if (!klpqJwt.userId) {
       throw new Error('bad_klpq_token');
     }
 
