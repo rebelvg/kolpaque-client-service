@@ -96,7 +96,13 @@ passport.use(
 app.proxy = true;
 
 app.use(async (ctx, next) => {
-  console.log(ctx.method, ctx.href, JSON.stringify(ctx.headers));
+  console.log(
+    ctx.method,
+    ctx.href,
+    JSON.stringify(ctx.headers),
+    JSON.stringify(ctx.params),
+    JSON.stringify(ctx.query),
+  );
 
   try {
     await next();
