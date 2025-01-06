@@ -112,7 +112,7 @@ app.use(async (ctx, next) => {
     ctx.status = error.status || 500;
     ctx.body = { error: error.message };
 
-    console.error(ctx.method, ctx.href, ctx.status);
+    console.error(ctx.method, ctx.href, ctx.status, ctx.ip, ctx.headers);
     console.error('http_error', error.message, JSON.stringify(error.stack));
   }
 });
