@@ -50,7 +50,6 @@ app.use(bodyParser({ enableTypes: ['json'] }));
 export const httpServer = http.createServer(app.callback());
 
 app.use(passport.initialize());
-app.use(passport.session());
 
 passport.use(
   'kick',
@@ -181,7 +180,7 @@ router.get(
     await next();
   },
   passport.authenticate('kick', {
-    session: true,
+    session: false,
     scope: ['user:read', 'channel:read'],
   }),
 );
@@ -201,7 +200,7 @@ router.get(
 
 router.get(
   '/auth/kick/callback',
-  passport.authenticate('kick', { session: true }),
+  passport.authenticate('kick', { session: false }),
   (ctx: Router.IRouterContext, next: Koa.Next) => {
     const requestId = ctx.cookies.get('requestId');
     const { user } = ctx.state;
