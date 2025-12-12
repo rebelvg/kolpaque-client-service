@@ -201,7 +201,7 @@ router.get(
 
 router.get(
   '/auth/kick/callback',
-  passport.authenticate('twitch', { session: false }),
+  passport.authenticate('kick', { session: true }),
   (ctx: Router.IRouterContext, next: Koa.Next) => {
     const requestId = ctx.cookies.get('requestId');
     const { user } = ctx.state;
