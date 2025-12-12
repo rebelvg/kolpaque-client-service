@@ -52,29 +52,6 @@ export const httpServer = http.createServer(app.callback());
 app.use(passport.initialize());
 
 passport.use(
-  'kick',
-  new OAuth2Strategy(
-    {
-      authorizationURL: 'https://id.kick.com/oauth/authorize',
-      tokenURL: 'https://id.kick.com/oauth/token',
-      clientID: KICK.CLIENT_ID,
-      clientSecret: KICK.CLIENT_SECRET,
-      callbackURL: KICK.CALLBACK_URL,
-      state: true,
-      pkce: true,
-    },
-    function (accessToken, refreshToken, profile, done) {
-      const user: IUser = {
-        accessToken,
-        refreshToken,
-      };
-
-      done(null, user);
-    },
-  ),
-);
-
-passport.use(
   'twitch',
   new OAuth2Strategy(
     {
@@ -105,6 +82,29 @@ passport.use(
       clientID: GOOGLE.CLIENT_ID,
       clientSecret: GOOGLE.CLIENT_SECRET,
       callbackURL: GOOGLE.CALLBACK_URL,
+    },
+    function (accessToken, refreshToken, profile, done) {
+      const user: IUser = {
+        accessToken,
+        refreshToken,
+      };
+
+      done(null, user);
+    },
+  ),
+);
+
+passport.use(
+  'kick',
+  new OAuth2Strategy(
+    {
+      authorizationURL: 'https://id.kick.com/oauth/authorize',
+      tokenURL: 'https://id.kick.com/oauth/token',
+      clientID: KICK.CLIENT_ID,
+      clientSecret: KICK.CLIENT_SECRET,
+      callbackURL: KICK.CALLBACK_URL,
+      state: true,
+      pkce: true,
     },
     function (accessToken, refreshToken, profile, done) {
       const user: IUser = {
@@ -200,7 +200,10 @@ router.get(
 
 router.get(
   '/auth/kick/callback',
-  passport.authenticate('kick', { session: false }),
+  passport.authenticate('kick', {
+    session: false,
+    scope: ['user:read', 'channel:read'],
+  }),
   (ctx: Router.IRouterContext, next: Koa.Next) => {
     const requestId = ctx.cookies.get('requestId');
     const { user } = ctx.state;
