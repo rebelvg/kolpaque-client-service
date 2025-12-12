@@ -27,3 +27,9 @@ export const DB_URI = env.DB_URI;
 export const API = {
   AUTH_SERVICE_URL: env.AUTH_SERVICE_LOGIN_URL,
 };
+
+export const KICK = {
+  CLIENT_ID: env.TWITCH_CLIENT_ID,
+  CLIENT_SECRET: env.TWITCH_CLIENT_SECRET,
+  CALLBACK_URL: env.TWITCH_CALLBACK_URL,
+};

@@ -17,6 +17,14 @@ export function publishTwitchUser(requestId: string, user: IUser) {
   }
 }
 
+export function publishKickUser(requestId: string, user: IUser) {
+  const client = CLIENTS[requestId];
+
+  if (client) {
+    client.emit('kick_user', user);
+  }
+}
+
 export function publishYoutubeUser(requestId: string, user: IUser) {
   const client = CLIENTS[requestId];
 

@@ -10,8 +10,9 @@ import * as _ from 'lodash';
 import * as bodyParser from 'koa-bodyparser';
 import * as koaSession from 'koa-session';
 
-import { SERVER, TWITCH, GOOGLE, API } from './config';
+import { SERVER, TWITCH, GOOGLE, API, KICK } from './config';
 import {
+  publishKickUser,
   publishKlpqUser,
   publishTwitchUser,
   publishYoutubeUser,
@@ -49,6 +50,27 @@ app.use(bodyParser({ enableTypes: ['json'] }));
 export const httpServer = http.createServer(app.callback());
 
 app.use(passport.initialize());
+
+passport.use(
+  'kick',
+  new OAuth2Strategy(
+    {
+      authorizationURL: 'https://id.kick.com/oauth/authorize',
+      tokenURL: 'https://id.kick.com/oauth/token',
+      clientID: KICK.CLIENT_ID,
+      clientSecret: KICK.CLIENT_SECRET,
+      callbackURL: KICK.CALLBACK_URL,
+    },
+    function (accessToken, refreshToken, profile, done) {
+      const user: IUser = {
+        accessToken,
+        refreshToken,
+      };
+
+      done(null, user);
+    },
+  ),
+);
 
 passport.use(
   'twitch',
@@ -143,6 +165,25 @@ router.get(
 );
 
 router.get(
+  '/auth/kick',
+  async (ctx, next) => {
+    const { requestId } = ctx.query;
+
+    if (!requestId) {
+      throw new Error('no_request_id');
+    }
+
+    ctx.cookies.set('requestId', requestId as string);
+
+    await next();
+  },
+  passport.authenticate('kick', {
+    session: false,
+    scope: ['user:read'],
+  }),
+);
+
+router.get(
   '/auth/twitch/callback',
   passport.authenticate('twitch', { session: false }),
   (ctx: Router.IRouterContext, next: Koa.Next) => {
@@ -150,6 +191,19 @@ router.get(
     const { user } = ctx.state;
 
     publishTwitchUser(requestId, user);
+
+    ctx.body = 'sign_in_successful';
+  },
+);
+
+router.get(
+  '/auth/kick/callback',
+  passport.authenticate('twitch', { session: false }),
+  (ctx: Router.IRouterContext, next: Koa.Next) => {
+    const requestId = ctx.cookies.get('requestId');
+    const { user } = ctx.state;
+
+    publishKickUser(requestId, user);
 
     ctx.body = 'sign_in_successful';
   },
@@ -173,6 +227,29 @@ router.get('/auth/twitch/refresh', async (ctx, next) => {
     access_token: string;
     refresh_token: string;
   }>('https://id.twitch.tv/oauth2/token', params);
+
+  ctx.body = {
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token,
+  };
+});
+
+router.get('/auth/kick/refresh', async (ctx, next) => {
+  const { refreshToken } = ctx.query;
+
+  if (!refreshToken) {
+    throw new Error('no_refresh_token');
+  }
+
+  const { data } = await axios.post<{
+    access_token: string;
+    refresh_token: string;
+  }>('https://id.kick.com/oauth/token', {
+    client_id: KICK.CLIENT_ID,
+    client_secret: KICK.CLIENT_SECRET,
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken,
+  });
 
   ctx.body = {
     accessToken: data.access_token,

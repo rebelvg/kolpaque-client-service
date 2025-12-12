@@ -16,6 +16,9 @@ interface IEnv {
   GOOGLE_CALLBACK_URL: string;
   YOUTUBE_API_KEY: string;
   AUTH_SERVICE_LOGIN_URL: string;
+  KICK_CLIENT_ID: string;
+  KICK_CLIENT_SECRET: string;
+  KICK_CALLBACK_URL: string;
 }
 
 export const env: IEnv = {
@@ -31,6 +34,9 @@ export const env: IEnv = {
   GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL,
   YOUTUBE_API_KEY: process.env.YOUTUBE_API_KEY,
   AUTH_SERVICE_LOGIN_URL: process.env.AUTH_SERVICE_LOGIN_URL,
+  KICK_CLIENT_ID: process.env.KICK_CLIENT_ID,
+  KICK_CLIENT_SECRET: process.env.KICK_CLIENT_SECRET,
+  KICK_CALLBACK_URL: process.env.KICK_CALLBACK_URL,
 };
 
 console.log(env);
