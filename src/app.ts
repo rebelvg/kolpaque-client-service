@@ -243,15 +243,17 @@ router.get('/auth/kick/refresh', async (ctx, next) => {
     throw new Error('no_refresh_token');
   }
 
+  const params = new URLSearchParams();
+
+  params.append('client_id', TWITCH.CLIENT_ID);
+  params.append('client_secret', TWITCH.CLIENT_SECRET);
+  params.append('grant_type', 'refresh_token');
+  params.append('refresh_token', refreshToken as string);
+
   const { data } = await axios.post<{
     access_token: string;
     refresh_token: string;
-  }>('https://id.kick.com/oauth/token', {
-    client_id: KICK.CLIENT_ID,
-    client_secret: KICK.CLIENT_SECRET,
-    grant_type: 'refresh_token',
-    refresh_token: refreshToken,
-  });
+  }>('https://id.kick.com/oauth/token', params);
 
   ctx.body = {
     accessToken: data.access_token,
