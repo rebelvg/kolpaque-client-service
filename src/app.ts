@@ -182,6 +182,9 @@ router.get(
     session: false,
     scope: ['user:read', 'channel:read'],
   }),
+  (ctx, next) => {
+    console.log(ctx.res.getHeaders());
+  },
 );
 
 router.get(
