@@ -50,6 +50,7 @@ app.use(bodyParser({ enableTypes: ['json'] }));
 export const httpServer = http.createServer(app.callback());
 
 app.use(passport.initialize());
+app.use(passport.session());
 
 passport.use(
   'kick',
@@ -180,7 +181,7 @@ router.get(
     await next();
   },
   passport.authenticate('kick', {
-    session: false,
+    session: true,
     scope: ['user:read', 'channel:read'],
   }),
 );
