@@ -60,6 +60,7 @@ passport.use(
       clientID: KICK.CLIENT_ID,
       clientSecret: KICK.CLIENT_SECRET,
       callbackURL: KICK.CALLBACK_URL,
+      state: true,
     },
     function (accessToken, refreshToken, profile, done) {
       const user: IUser = {
