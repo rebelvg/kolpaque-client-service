@@ -61,6 +61,7 @@ passport.use(
       clientSecret: KICK.CLIENT_SECRET,
       callbackURL: KICK.CALLBACK_URL,
       state: true,
+      pkce: true,
     },
     function (accessToken, refreshToken, profile, done) {
       const user: IUser = {
@@ -177,22 +178,10 @@ router.get(
     ctx.cookies.set('requestId', requestId as string);
 
     await next();
-
-    console.log(ctx.res.getHeaders());
-
-    const { location } = ctx.res.getHeaders();
-
-    const redirectUrl = new URL(location as string);
-
-    redirectUrl.searchParams.append('code_challenge', uuid.v4());
-    redirectUrl.searchParams.append('code_challenge_method', 'S256');
-
-    ctx.res.setHeader('location', redirectUrl.href);
   },
   passport.authenticate('kick', {
     session: false,
     scope: ['user:read', 'channel:read'],
-    passReqToCallback: true,
   }),
 );
 
