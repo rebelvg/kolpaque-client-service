@@ -179,7 +179,7 @@ router.get(
   },
   passport.authenticate('kick', {
     session: false,
-    scope: ['user:read'],
+    scope: ['user:read', 'channel:read'],
   }),
 );
 
