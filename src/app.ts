@@ -178,13 +178,17 @@ router.get(
 
     await next();
   },
-  passport.authenticate('kick', {
-    session: false,
-    scope: ['user:read', 'channel:read'],
-  }),
-  (ctx, next) => {
-    console.log(ctx.res.getHeaders());
-  },
+  passport.authenticate(
+    'kick',
+    {
+      session: false,
+      scope: ['user:read', 'channel:read'],
+      passReqToCallback: true,
+    },
+    (req, res, next) => {
+      console.log(req, res, next);
+    },
+  ),
 );
 
 router.get(
