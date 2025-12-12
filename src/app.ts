@@ -202,7 +202,6 @@ router.get(
   '/auth/kick/callback',
   passport.authenticate('kick', {
     session: false,
-    scope: ['user:read', 'channel:read'],
   }),
   (ctx: Router.IRouterContext, next: Koa.Next) => {
     const requestId = ctx.cookies.get('requestId');
