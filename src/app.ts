@@ -245,8 +245,8 @@ router.get('/auth/kick/refresh', async (ctx, next) => {
 
   const params = new URLSearchParams();
 
-  params.append('client_id', TWITCH.CLIENT_ID);
-  params.append('client_secret', TWITCH.CLIENT_SECRET);
+  params.append('client_id', KICK.CLIENT_ID);
+  params.append('client_secret', KICK.CLIENT_SECRET);
   params.append('grant_type', 'refresh_token');
   params.append('refresh_token', refreshToken as string);
 
