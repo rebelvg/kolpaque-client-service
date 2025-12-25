@@ -26,12 +26,12 @@ export interface ISyncCollection {
   updateDate: Date;
 }
 
-let mongoClientDb: Db;
+const client = new MongoClient(DB_URI);
+
+const mongoClientDb = client.db();
 
 export async function connectMongoDriver(): Promise<MongoClient> {
   const client = await MongoClient.connect(DB_URI);
-
-  mongoClientDb = client.db();
 
   return client;
 }

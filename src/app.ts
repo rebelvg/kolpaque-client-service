@@ -470,6 +470,8 @@ router.get('/auth/klpq/callback', async (ctx, next) => {
 });
 
 router.get('/sync/:id', async (ctx, next) => {
+  return;
+
   const jwt = ctx.get('jwt');
 
   let userId: string;
@@ -522,6 +524,8 @@ router.get('/sync/:id', async (ctx, next) => {
 });
 
 router.post('/sync', async (ctx, next) => {
+  return;
+
   const jwt = ctx.get('jwt');
 
   let userId: string;
