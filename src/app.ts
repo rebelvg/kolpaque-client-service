@@ -120,24 +120,23 @@ passport.use(
 app.proxy = true;
 
 app.use(async (ctx, next) => {
-  console.log(
-    ctx.method,
-    ctx.href,
-    JSON.stringify(ctx.headers),
-    JSON.stringify(ctx.params),
-    JSON.stringify(ctx.query),
-  );
-
   try {
     await next();
 
-    console.log(ctx.method, ctx.href, ctx.status);
+    console.log('http', ctx.ip, ctx.method, ctx.status, ctx.url);
   } catch (error) {
     ctx.status = error.status || 500;
     ctx.body = { error: error.message };
 
-    console.error(ctx.method, ctx.href, ctx.status, ctx.ip, ctx.headers);
-    console.error('http_error', error.message, JSON.stringify(error.stack));
+    console.error('error', JSON.stringify([error.message, error.stack]));
+    console.error(
+      'http',
+      ctx.ip,
+      ctx.method,
+      ctx.status,
+      ctx.url,
+      JSON.stringify([ctx.query, ctx.request.body]),
+    );
   }
 });
 
