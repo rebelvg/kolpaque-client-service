@@ -4,11 +4,11 @@ import { SERVER } from '../src/config';
 
 const io = SocketClient(`http://localhost:${SERVER.PORT}`);
 
-io.on('twitch_user', (user) => {
+io.on('twitch_user', (user: any) => {
   console.log(user);
 });
 
-io.on('klpq_user', (user) => {
+io.on('klpq_user', (user: any) => {
   console.log(user);
 });
 
