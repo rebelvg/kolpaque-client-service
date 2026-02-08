@@ -238,6 +238,10 @@ router.get('/auth/twitch/refresh', async (ctx, next) => {
 });
 
 router.get('/auth/kick/refresh', async (ctx, next) => {
+  ctx.status = 201;
+
+  return;
+
   const { refreshToken } = ctx.query;
 
   if (!refreshToken) {
@@ -398,6 +402,8 @@ router.get('/youtube/channels', async (ctx, next) => {
 });
 
 router.get('/youtube/streams', async (ctx, next) => {
+  ctx.status = 201;
+
   return;
 
   const { channelId } = ctx.query;
@@ -469,6 +475,8 @@ router.get('/auth/klpq/callback', async (ctx, next) => {
 });
 
 router.get('/sync/:id', async (ctx, next) => {
+  ctx.status = 201;
+
   return;
 
   const jwt = ctx.get('jwt');
@@ -523,6 +531,8 @@ router.get('/sync/:id', async (ctx, next) => {
 });
 
 router.post('/sync', async (ctx, next) => {
+  ctx.status = 201;
+
   return;
 
   const jwt = ctx.get('jwt');
