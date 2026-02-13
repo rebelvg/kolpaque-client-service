@@ -1,19 +1,19 @@
-import * as SocketClient from 'socket.io-client';
+import { io } from 'socket.io-client';
 
 import { SERVER } from '../src/config';
 
-const io = SocketClient(`http://localhost:${SERVER.PORT}`);
+const client = io(`http://localhost:${SERVER.PORT}`);
 
-io.on('twitch_user', (user: any) => {
+client.on('twitch_user', (user: any) => {
   console.log(user);
 });
 
-io.on('klpq_user', (user: any) => {
+client.on('klpq_user', (user: any) => {
   console.log(user);
 });
 
-io.on('connect', () => {
-  io.emit('request_id', 'test');
+client.on('connect', () => {
+  client.emit('request_id', 'test');
 });
 
 console.log('client started...');

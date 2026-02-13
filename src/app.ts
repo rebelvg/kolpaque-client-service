@@ -1,5 +1,5 @@
 import * as Koa from 'koa';
-import * as Router from 'koa-router';
+import Router, { IRouterContext } from '@koa/router';
 import * as passport from 'koa-passport';
 import * as OAuth2Strategy from 'passport-oauth2';
 import * as http from 'http';
@@ -8,7 +8,7 @@ import * as jsonwebtoken from 'jsonwebtoken';
 import * as uuid from 'uuid';
 import * as _ from 'lodash';
 import * as bodyParser from 'koa-bodyparser';
-import * as koaSession from 'koa-session';
+import koaSession from 'koa-session';
 
 import { SERVER, TWITCH, GOOGLE, API, KICK } from './config';
 import {
@@ -25,21 +25,22 @@ export interface IUser {
   refreshToken: string;
 }
 
-declare module 'koa' {
-  interface Context {
-    state: {
-      user: IUser;
-      [key: string]: any;
-    };
-  }
+interface IHttpState {
+  user: IUser;
+  [key: string]: unknown;
 }
 
-declare module 'koa-router' {
+declare module 'koa' {
+  interface Context {
+    state: IHttpState;
+  }
+
+  interface DefaultState extends IHttpState {}
+}
+
+declare module '@koa/router' {
   interface IRouterContext {
-    state: {
-      user: IUser;
-      [key: string]: any;
-    };
+    state: IHttpState;
   }
 }
 
@@ -187,7 +188,7 @@ router.get(
 router.get(
   '/auth/twitch/callback',
   passport.authenticate('twitch', { session: false }),
-  (ctx: Router.IRouterContext, next: Koa.Next) => {
+  (ctx, next) => {
     const requestId = ctx.cookies.get('requestId');
     const { user } = ctx.state;
 
@@ -202,7 +203,7 @@ router.get(
   passport.authenticate('kick', {
     session: false,
   }),
-  (ctx: Router.IRouterContext, next: Koa.Next) => {
+  (ctx, next) => {
     const requestId = ctx.cookies.get('requestId');
     const { user } = ctx.state;
 
@@ -332,7 +333,7 @@ router.get(
 router.get(
   '/auth/google/callback',
   passport.authenticate('google', { session: false }),
-  (ctx: Router.IRouterContext, next: Koa.Next) => {
+  (ctx, next) => {
     const requestId = ctx.cookies.get('requestId');
     const { user } = ctx.state;
 
@@ -568,7 +569,7 @@ router.post('/sync', async (ctx, next) => {
     return;
   }
 
-  const { id, channels } = ctx.request.body;
+  const { id, channels } = <{ id: string; channels: unknown }>ctx.request.body;
 
   const { Sync } = MongoCollections;
 

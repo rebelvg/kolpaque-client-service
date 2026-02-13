@@ -1,12 +1,12 @@
-import * as SocketServer from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import * as _ from 'lodash';
 
 import { IUser } from './app';
 
-export const io = SocketServer();
+export const io = new Server();
 
 const CLIENTS: {
-  [key: string]: SocketServer.Socket;
+  [key: string]: Socket;
 } = {};
 
 export function publishTwitchUser(requestId: string, user: IUser) {
