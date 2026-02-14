@@ -42,16 +42,18 @@ export function publishKlpqUser(requestId: string, signedJwt: string) {
 }
 
 io.on('connection', (socket) => {
-  console.log('connection', socket.client.conn.remoteAddress);
+  const ip = socket.client.request.headers['x-forwarded-for'];
+
+  console.log('connection', ip);
 
   socket.on('request_id', (requestId) => {
-    console.log('request_id', requestId);
+    console.log('request_id', ip, requestId);
 
     CLIENTS[requestId] = socket;
   });
 
   socket.on('disconnect', () => {
-    console.log('disconnect', socket.client.conn.remoteAddress);
+    console.log('disconnect', ip);
 
     _.forEach(CLIENTS, (client, id) => {
       if (client === socket) {
