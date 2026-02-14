@@ -42,11 +42,17 @@ export function publishKlpqUser(requestId: string, signedJwt: string) {
 }
 
 io.on('connection', (socket) => {
+  console.log('connection', socket.client.conn.remoteAddress);
+
   socket.on('request_id', (requestId) => {
+    console.log('request_id', requestId);
+
     CLIENTS[requestId] = socket;
   });
 
   socket.on('disconnect', () => {
+    console.log('disconnect', socket.client.conn.remoteAddress);
+
     _.forEach(CLIENTS, (client, id) => {
       if (client === socket) {
         delete CLIENTS[id];
